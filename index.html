@@ -681,6 +681,14 @@ window.studyBadges = function(studies) {
   }).join(' ');
 };
 
+// 유저 ID가 일치하는지 안전하게 비교하는 헬퍼
+window.isSameUser = function(userOrIdA, userOrIdB) {
+  if (!userOrIdA || !userOrIdB) return false;
+  const idA = String(typeof userOrIdA === 'object' ? (userOrIdA.id || userOrIdA.uid || userOrIdA.userId) : userOrIdA).trim();
+  const idB = String(typeof userOrIdB === 'object' ? (userOrIdB.id || userOrIdB.uid || userOrIdB.userId) : userOrIdB).trim();
+  return idA === idB && idA !== '';
+};
+
 // 전체 조/그룹 및 스터디 목록을 동적으로 추출하는 헬퍼
 window.getAllTargetGroups = function() {
   const groupsSet = new Set(['1조', '2조', '3조', '4조', '5조']);
@@ -1063,28 +1071,32 @@ window.initApp = function() {
   if (typeof updateSemUI === 'function') updateSemUI();
 };
 
-window.goPage = function(page) {
+window.goPage = window.navigate = function(page) {
   const u = DB.currentUser;
   if(!u) return;
 
-  document.querySelectorAll('.ni').forEach(e => {
-    const oc = e.getAttribute('onclick');
-    if (oc && oc.includes(`goPage('${page}')`)) e.classList.add('active');
-    else e.classList.remove('active');
-  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
 
-  document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
   const targetPage = document.getElementById(`page-${page}`);
   if(targetPage) targetPage.classList.add('active');
+
+  document.querySelectorAll('.ni').forEach(e => {
+    const oc = e.getAttribute('onclick');
+    if (oc && (oc.includes(`goPage('${page}')`) || oc.includes(`navigate('${page}')`))) {
+      e.classList.add('active');
+    }
+  });
 
   const titles = { dashboard: '대시보드', attendance: '출석체크', assignments: '과제 관리', members: '학회원 명단', profile: '내 프로필', files: '작업물 보관함', teamlog: '팀 로그', notify: '알림 보내기', admin: '관리자 설정' };
   const pt = document.getElementById('page-title');
   if(pt) pt.textContent = titles[page] || '대시보드';
 
+  // 페이지별 렌더링 강제 실행
   if (page === 'dashboard' && typeof renderDashboard === 'function') renderDashboard();
-  if (page === 'attendance' && typeof renderAttendance === 'function') renderAttendance();
-  if (page === 'assignments' && typeof renderAssignments === 'function') renderAssignments('ongoing');
-  if (page === 'members' && typeof renderMembers === 'function') renderMembers();
+  else if (page === 'attendance' && typeof renderAttendance === 'function') renderAttendance();
+  else if (page === 'assignments' && typeof renderAssignments === 'function') renderAssignments(window.curAsgTab || 'ongoing');
+  else if (page === 'members' && typeof renderMembers === 'function') renderMembers();
   if (page === 'profile' && typeof renderProfile === 'function') renderProfile();
   if (page === 'files' && typeof renderFiles === 'function') renderFiles();
   if (page === 'teamlog' && typeof renderLogs === 'function') renderLogs();
@@ -1923,35 +1935,36 @@ window.renderDashboard = function() {
   // 1. 총 학회원 수
   const tEl = document.getElementById('s-total');
   if (tEl) tEl.textContent = activeUsers.length;
-  const tSub = document.getElementById('s-sem-sub');
-  if (tSub) tSub.textContent = DB.currentSem || '2026-2';
 
-  // 2. 오늘의 출석 상태 위젯 (s-att & s-att-sub)
+  // 2. 오늘의 출석 상태 카드 위젯 (s-att & s-att-sub)
   const aEl = document.getElementById('s-att');
   const aSub = document.getElementById('s-att-sub');
   
-  // 오늘 생성된 출석 세션 중 본인 대상 세션 검색
-  const todaySessions = (DB.attendance || []).filter(a => a.date === today);
+  // 가장 최근 세션 또는 오늘 세션 탐색
+  const allSessions = (DB.attendance || []).slice().reverse();
+  const todaySessions = allSessions.filter(a => a.date === today);
+  
+  // 본인 대상 세션 확인
   const mySession = todaySessions.find(a => 
     a.target_group === '전체' || 
     a.target_group === u.group || 
     (Array.isArray(u.studies) && u.studies.includes(a.target_group))
-  ) || todaySessions[0];
+  ) || todaySessions[0] || allSessions[0];
 
   if (mySession) {
     const records = Array.isArray(mySession.records) ? mySession.records : [];
-    const myRec = records.find(x => String(x.uid) === String(u.id) || String(x.userId) === String(u.id));
+    const myRec = records.find(r => window.isSameUser(r, u));
 
-    if (myRec && myRec.status !== '미출석') {
+    if (myRec && myRec.status && myRec.status !== '미출석') {
       if (aEl) {
         aEl.textContent = myRec.status;
-        aEl.className = 'sv ' + (myRec.status === '출석' ? 'gr' : (myRec.status === '결석' ? 're' : (myRec.status === '지각' ? 'ye' : 'bl')));
+        aEl.className = 'sv ' + (myRec.status === '출석' ? 'gr' : (myRec.status === '결석' ? 're' : 'ye'));
       }
-      if (aSub) aSub.textContent = `인증 완료 (${myRec.time || '오늘'})`;
+      if (aSub) aSub.textContent = `${mySession.title} · ${myRec.time || '인증 완료'}`;
     } else {
       if (aEl) {
-        aEl.textContent = mySession.code ? '미인증' : '출석 전';
-        aEl.className = 'sv ' + (mySession.code ? 're' : '');
+        aEl.textContent = mySession.code ? '미인증' : '진행중';
+        aEl.className = 'sv ' + (mySession.code ? 're' : 'ye');
       }
       if (aSub) aSub.textContent = mySession.code ? '출석 코드를 입력하세요' : '출석 세션 진행 중';
     }
@@ -1960,63 +1973,53 @@ window.renderDashboard = function() {
       aEl.textContent = '—';
       aEl.className = 'sv';
     }
-    if (aSub) aSub.textContent = '오늘 예정된 출석 없음';
+    if (aSub) aSub.textContent = '예정된 출석 없음';
   }
 
-  // 3. 진행 중인 과제 수
-  const now = new Date();
-  const ong = document.getElementById('s-ongoing');
-  if (ong) {
-    ong.textContent = (DB?.assignments || []).filter(a => new Date(a.deadline).setHours(23, 59, 59, 999) >= now).length;
-  }
-
-  // 4. 마감 지난 미제출 과제 수
-  const ovd = document.getElementById('s-overdue');
-  if (ovd) {
-    ovd.textContent = (DB?.assignments || []).filter(a => 
-      (new Date(a.deadline).setHours(23, 59, 59, 999) < now) && 
-      !(a.submissions || []).some(s => String(s.userId) === String(u.id) || String(s.uid) === String(u.id))
-    ).length;
-  }
-
-  // 5. 최근 출석 기록 리스트 (dash-att)
+  // 3. 최근 출석 목록 위젯 (dash-att)
   const datt = document.getElementById('dash-att');
   if (datt) {
-    const myAttHistory = (DB.attendance || []).filter(a => {
-      const isTarget = a.target_group === '전체' ||
-        a.target_group === u.group ||
-        (Array.isArray(u.studies) && u.studies.includes(a.target_group)) ||
-        (Array.isArray(a.records) && a.records.some(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)));
-      return isTarget;
-    }).slice(-5).reverse();
-
-    if (!myAttHistory.length) {
+    const historyList = allSessions.slice(0, 5);
+    if (!historyList.length) {
       datt.innerHTML = '<div class="empty" style="padding:1rem;">출석 기록이 없습니다.</div>';
     } else {
-      datt.innerHTML = myAttHistory.map(a => {
+      datt.innerHTML = historyList.map(a => {
         const records = Array.isArray(a.records) ? a.records : [];
-        const r = records.find(x => String(x.uid) === String(u.id) || String(x.userId) === String(u.id));
-        const st = r ? r.status : '미출석';
-        const tmStr = r && r.time ? `<div style="font-size:11px; color:var(--gray-500); margin-top:2px;">${esc(r.time)} 인증</div>` : '';
-        const stColor = st === '출석' ? 'green' : (st === '결석' ? 'red' : (st === '지각' ? 'yellow-dark' : (st === '사유' ? 'blue' : 'gray-500')));
+        const r = records.find(x => window.isSameUser(x, u));
+        const st = r ? r.status : '미인증';
+        const tm = r && r.time ? `<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${r.time} 인증</div>` : '';
+        const badgeCls = st === '출석' ? 'b-gr' : (st === '지각' ? 'b-ye' : 'b-re');
 
         return `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:.65rem; border-bottom:1px solid var(--gray-100);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:.75rem .5rem; border-bottom:1px solid var(--gray-100);">
             <div>
-              <div style="font-size:13px; font-weight:600; color:var(--gray-800);">${esc(a.title)}</div>
-              <div style="font-size:11px; color:var(--gray-500); margin-top:3px;">${fmt(a.date)} · ${esc(a.target_group || '전체')} 대상</div>
+              <div style="font-size:13px; font-weight:600;">${esc(a.title)}</div>
+              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">${fmt(a.date)} · ${esc(a.target_group || '전체')}</div>
             </div>
             <div style="text-align:right;">
-              <div style="font-size:14px; font-weight:700; color:var(--${stColor});">${st}</div>
-              ${tmStr}
+              <span class="badge ${badgeCls}">${st}</span>
+              ${tm}
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
   }
 
-  // 6. 스터디 및 프로젝트 참가 현황 (dash-teams)
+  // 4. 과제 및 스터디 위젯
+  const now = new Date();
+  const ong = document.getElementById('s-ongoing');
+  if (ong) {
+    ong.textContent = (DB.assignments || []).filter(a => new Date(a.deadline).setHours(23, 59, 59, 999) >= now).length;
+  }
+  const ovd = document.getElementById('s-overdue');
+  if (ovd) {
+    ovd.textContent = (DB.assignments || []).filter(a => 
+      (new Date(a.deadline).setHours(23, 59, 59, 999) < now) && 
+      !(a.submissions || []).some(s => window.isSameUser(s, u))
+    ).length;
+  }
+
+  // 5. 스터디 및 프로젝트 참가 현황 (dash-teams) - 유실 방지 복원
   const dt = document.getElementById('dash-teams');
   if (dt) {
     const { studies } = typeof window.getAllTargetGroups === 'function' ? window.getAllTargetGroups() : { studies: DB.studies || [] };
@@ -2031,7 +2034,6 @@ window.renderDashboard = function() {
     '</div>';
   }
 
-  // 달력 및 아이콘 렌더
   if (typeof renderCalendar === 'function') renderCalendar();
   if (window.lucide) window.lucide.createIcons();
 };
