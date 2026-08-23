@@ -1436,11 +1436,14 @@ window.getAsgStats = function(a) {
 window.renderAttendance = function() {
   if (!DB || !DB.currentUser) return;
   const u = DB.currentUser;
-  const isOfficer = isAdmin(u) || canMng(u);
+  const isOfficer = typeof canMng === 'function' ? canMng(u) : false;
   const today = new Date().toISOString().split('T')[0];
-  const tA = (DB?.attendance || []).find(a => a.date === today);
+  
+  // 현재 유효한 출석 세션 검색
+  const activeSession = (DB.attendance || []).slice().reverse().find(a => a.code && String(a.code).trim().length > 0);
+  const todaySession = (DB.attendance || []).find(a => a.date === today);
 
-  // 1. 관리자 출석 코드 발급 패널
+  // 1. 관리자 패널 (코드 발급 & 마감/중지 버튼)
   const ap = document.getElementById('att-admin-panel');
   if (ap) {
     if (isOfficer) {
@@ -1449,58 +1452,59 @@ window.renderAttendance = function() {
         <div class="card" style="margin-bottom:1rem; padding:1.25rem;">
           <div class="c-hd"><div class="c-title" style="display:flex;align-items:center;gap:6px;"><i data-lucide="settings" style="width:16px;height:16px;"></i> 출석 코드 관리 (운영진)</div></div>
           <div style="display:flex;gap:7px;margin-top:.75rem;align-items:center;flex-wrap:wrap;">
-            <input id="setup-title" class="fc" style="max-width:160px;" placeholder="세미나/스터디명" value="${esc(window.attSetupState?.title || '')}">
+            <input id="setup-title" class="fc" style="max-width:160px;" placeholder="세미나/스터디명" value="${todaySession ? esc(todaySession.title) : '정기 세미나'}">
             <select id="setup-target" class="fc" style="max-width:140px;">
-              <option value="전체">전체</option>
+              <option value="전체">전체 대상</option>
               ${(DB.groups || []).map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}
               ${(DB.studies || []).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('')}
             </select>
-            <input id="att-code-inp" class="fc" style="max-width:120px;text-transform:uppercase;" placeholder="코드 입력" value="${tA ? esc(tA.code || '') : ''}">
-            <button class="btn btn-p" onclick="setTodayCode()">설정</button>
+            <input id="att-code-inp" class="fc" style="max-width:120px;text-transform:uppercase;" placeholder="코드 입력" value="${activeSession ? esc(activeSession.code) : ''}">
+            <button class="btn btn-p" onclick="setTodayCode()">코드 발급</button>
+            ${activeSession ? `<button class="btn btn-d" onclick="closeAttendanceSession('${activeSession.id}')">출석체크 마감(중지)</button>` : ''}
           </div>
+          ${activeSession ? `
+          <div style="margin-top:.75rem; font-size:12px; color:var(--blue); font-weight:600;">
+            ● 현재 [${esc(activeSession.title)}] 세션 진행 중 (코드: ${esc(activeSession.code)} / 대상:${esc(activeSession.target_group || '전체')})
+          </div>` : ''}
         </div>`;
     } else {
       ap.style.display = 'none';
     }
   }
 
-  // 2. 학회원 출석체크 패널
+  // 2. 학회원 패널 (출석 코드 입력란)
   const mp = document.getElementById('att-member-panel');
   if (mp) {
-    const myRec = tA ? (tA.records || []).find(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)) : null;
-    const isTarget = tA && (tA.target_group === '전체' || tA.target_group === u.group || (Array.isArray(u.studies) && u.studies.includes(tA.target_group)));
+    const targetSession = activeSession || todaySession;
+    const myRec = targetSession ? (targetSession.records || []).find(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)) : null;
+    const isTarget = targetSession ? (targetSession.target_group === '전체' || targetSession.target_group === u.group || (Array.isArray(u.studies) && u.studies.includes(targetSession.target_group))) : true;
 
-    if (!tA || !tA.code) {
-      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">현재 진행 중인 출석체크가 없습니다.</div>`;
+    if (!activeSession) {
+      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">현재 진행 중인 출석체크가 없거나 마감되었습니다.</div>`;
     } else if (!isTarget) {
-      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">오늘은 귀하의 출석 대상 세션이 아닙니다.</div>`;
+      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">오늘은 귀하의 출석 대상 세션이 아닙니다. (${esc(activeSession.target_group)} 대상)</div>`;
     } else if (myRec && myRec.status === '출석') {
-      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--green);font-weight:bold;margin-bottom:1rem;"><i data-lucide="check-circle" style="width:20px;height:20px;vertical-align:-4px;margin-right:6px;"></i> 오늘 출석 완료되었습니다! (${myRec.time || '인증됨'})</div>`;
+      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--green);font-weight:bold;margin-bottom:1rem;"><i data-lucide="check-circle" style="width:20px;height:20px;vertical-align:-4px;margin-right:6px;"></i> 오늘 출석 인증이 완료되었습니다! (${myRec.time || '인증 완료'})</div>`;
     } else {
       mp.innerHTML = `
         <div class="card" style="padding:1.25rem;margin-bottom:1rem;">
-          <div class="c-hd"><div class="c-title">✅ 오늘의 출석체크 (${esc(tA.title)})</div></div>
+          <div class="c-hd"><div class="c-title">✅ 출석체크 인증 — ${esc(activeSession.title)}</div><div class="c-sub">${fmt(activeSession.date)}</div></div>
           <div style="display:flex;gap:7px;margin-top:.75rem;">
-            <input id="my-att-code" class="fc" style="max-width:200px;text-transform:uppercase;" placeholder="출석 코드 입력">
+            <input id="my-att-code" class="fc" style="max-width:220px;text-transform:uppercase;" placeholder="출석 코드 4~6자리 입력">
             <button class="btn btn-p" onclick="submitAttCode()">출석 인증</button>
           </div>
         </div>`;
     }
   }
 
-  // 3. 출석체크 현황 리스트 (임원진 전용 권한 제어)
-  const histContainer = document.getElementById('att-history');
-  if (histContainer) {
+  // 3. 출석 히스토리 명단
+  const tbody = document.getElementById('att-history');
+  if (tbody) {
     let sessions = (DB.attendance || []).slice().reverse();
-    if (!isOfficer) {
-      histContainer.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--gray-500);">출석 현황 리스트 열람 권한이 없습니다.</td></tr>';
-      return;
-    }
-
     if (sessions.length === 0) {
-      histContainer.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;">출석 세션 기록이 없습니다.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--gray-500);">출석 기록이 없습니다.</td></tr>';
     } else {
-      histContainer.innerHTML = sessions.map(a => {
+      tbody.innerHTML = sessions.map(a => {
         const records = Array.isArray(a.records) ? a.records : [];
         let att = 0, late = 0, abs = 0;
         records.forEach(r => {
@@ -1517,13 +1521,30 @@ window.renderAttendance = function() {
             <td><span style="color:var(--green)">출석 ${att}</span> / <span style="color:var(--yellow-dark)">지각 ${late}</span> / <span style="color:var(--red)">결석 ${abs}</span> (총 ${records.length}명)</td>
             <td>
               <button class="btn btn-o btn-sm" onclick="openAttDetailModal('${a.id}')">상세보기</button>
-              <button class="btn btn-d btn-sm" style="margin-left:4px;" onclick="deleteAttendanceSession('${a.id}')">삭제</button>
+              ${isOfficer ? `<button class="btn btn-d btn-sm" style="margin-left:4px;" onclick="deleteAttendanceSession('${a.id}')">삭제</button>` : ''}
             </td>
           </tr>`;
       }).join('');
     }
   }
+
   if (window.lucide) window.lucide.createIcons();
+};
+
+window.closeAttendanceSession = async function(sessionId) {
+  if (!confirm('현재 출석체크를 마감하시겠습니까? 미인증 학회원은 결석 처리됩니다.')) return;
+  try {
+    const s = (DB.attendance || []).find(a => String(a.id) === String(sessionId));
+    if (!s) return;
+    const updatedRecords = (s.records || []).map(r => r.status === '미출석' ? { ...r, status: '결석' } : r);
+
+    await window.supabaseClient.from('attendance').update({ code: null, records: updatedRecords }).eq('id', sessionId);
+    toast('출석체크가 마감되었습니다.', 'ok');
+    if (window.API) await window.API.fetchInitialData();
+    renderAttendance();
+  } catch (e) {
+    toast('마감 처리 실패: ' + e.message, 'err');
+  }
 };
 
 window.setTodayCode = async function() {
@@ -2566,6 +2587,10 @@ window.exportFileCSV = function() {};
 
 // ─── CALENDAR FUNCTIONS ───────────────────────────────────
 window.calMove = function(dir) {
+  if (typeof DB.calM !== 'number') {
+    DB.calY = new Date().getFullYear();
+    DB.calM = new Date().getMonth();
+  }
   DB.calM += dir;
   if (DB.calM > 11) { DB.calM = 0; DB.calY++; }
   if (DB.calM < 0) { DB.calM = 11; DB.calY--; }
@@ -2573,13 +2598,8 @@ window.calMove = function(dir) {
 };
 
 window.renderCalendar = function() {
-  const u = DB.currentUser;
-  const canEdit = canMng(u);
-  
-  const hint = document.getElementById('cal-hint');
-  if (hint) hint.style.display = canEdit ? 'inline-block' : 'none';
-
-  const y = DB.calY, m = DB.calM;
+  const y = DB.calY || new Date().getFullYear();
+  const m = typeof DB.calM === 'number' ? DB.calM : new Date().getMonth();
   const calTitle = document.getElementById('cal-title');
   if (calTitle) calTitle.textContent = `${y}년 ${m + 1}월`;
 
@@ -2618,12 +2638,13 @@ window.renderCalendar = function() {
     const isToday = dStr === today;
     const dow = i % 7;
     const evs = (DB?.calEvents || []).filter(e => e.date === dStr);
+    const canEdit = typeof canMng === 'function' ? canMng(DB.currentUser) : false;
     const cls = ['cal-d', isOther ? 'other' : '', isToday ? 'today' : '', dow === 0 ? 'cal-sun' : dow === 6 ? 'cal-sat' : '', canEdit && !isOther ? 'editable' : ''].filter(Boolean).join(' ');
     const click = canEdit && !isOther ? `onclick="openCalModal('${dStr}')"` : '';
 
     cells += `<div class="${cls}" ${click}>
       <div class="cal-dn">${day}</div>
-      ${evs.map(e => `<div class="cal-ev ce-${e.type}" title="${esc(e.title)}">${esc(e.title)}</div>`).join('')}
+      ${evs.map(e => `<div class="cal-ev ce-${e.type || 'bl'}" title="${esc(e.title)}">${esc(e.title)}</div>`).join('')}
     </div>`;
   }
 
