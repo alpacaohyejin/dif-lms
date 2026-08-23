@@ -702,8 +702,11 @@ window.openModal = function(html) {
   document.getElementById('modal-root').appendChild(ov);
 };
 
+window.activeAttModalSessionId = null;
 window.closeModal = function() {
-  document.getElementById('modal-root').innerHTML = '';
+  window.activeAttModalSessionId = null;
+  const root = document.getElementById('modal-root');
+  if (root) root.innerHTML = '';
 };
 
 window.dlCSV = function(h, rows, fn) {
@@ -1043,7 +1046,6 @@ window.goPage = function(page) {
 window.setupRealtime = function() {
   if (!window.supabaseClient) return;
 
-  // 기존 채널이 있다면 정리 후 재연결
   if (window.realtimeChannel) {
     window.supabaseClient.removeChannel(window.realtimeChannel);
   }
@@ -1054,14 +1056,12 @@ window.setupRealtime = function() {
       'postgres_changes',
       { event: '*', schema: 'public' },
       async (payload) => {
-        console.log('⚡ [Realtime Change Detected]:', payload.table, payload.eventType);
-        
-        // 1. 전체 최신 데이터 즉시 재동기화
+        // 1. 최신 데이터 동기화
         if (window.API && typeof window.API.fetchInitialData === 'function') {
           await window.API.fetchInitialData();
         }
 
-        // 2. 현재 활성화되어 있는 페이지 UI 즉시 실시간 리렌더링
+        // 2. 현재 열려 있는 화면 리렌더링
         const activePage = document.querySelector('.page.active');
         if (activePage) {
           const pageId = activePage.id.replace('page-', '');
@@ -1076,13 +1076,15 @@ window.setupRealtime = function() {
           }
         }
 
-        // 3. 알림 뱃지 실시간 갱신
+        // 3. 만약 출석 현황 상세 모달이 열려 있다면 모달 내용도 즉시 실시간 갱신
+        if (window.activeAttModalSessionId) {
+          window.openAttStatusModal(window.activeAttModalSessionId);
+        }
+
         if (typeof updateNotifyBadge === 'function') updateNotifyBadge();
       }
     )
-    .subscribe((status) => {
-      console.log('📡 Realtime Status:', status);
-    });
+    .subscribe();
 };
 
 // 안전한 세션 체크 1회 보장
@@ -1699,40 +1701,102 @@ window.submitAttCode = async function() {
   }
 };
 
-window.openAttDetailModal = function(sessionId) {
-  const a = (DB.attendance || []).find(x => String(x.id) === String(sessionId));
-  if (!a) return;
+// 출석 현황 상세 모달 열기
+window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
+  let a;
+  if (sessionId) {
+    a = (DB?.attendance || []).find(x => String(x.id) === String(sessionId));
+    window.activeAttModalSessionId = String(sessionId);
+  } else {
+    const today = new Date().toISOString().split('T')[0];
+    a = (DB?.attendance || []).find(x => x.date === today) || (DB?.attendance || []).slice().reverse()[0];
+    if (a) window.activeAttModalSessionId = String(a.id);
+  }
 
+  if (!a) return toast('해당 출석 세션 정보가 없습니다.', 'err');
+
+  let targetUsers = (DB.users || []).filter(u => u.status === 'active');
+  if (a.target_group && a.target_group !== '전체') {
+    targetUsers = targetUsers.filter(u => 
+      u.group === a.target_group || (Array.isArray(u.studies) && u.studies.includes(a.target_group))
+    );
+  }
+
+  let present = 0, late = 0, absent = 0, excused = 0;
   const records = Array.isArray(a.records) ? a.records : [];
-  const rows = records.map(r => `
-    <tr>
-      <td>${esc(r.name)}</td>
-      <td>${esc(r.group || '—')}</td>
-      <td>
-        <select class="fc" style="padding:2px 6px; font-size:12px; width:auto;" onchange="updateMemberAttStatus('${a.id}', '${r.uid}', this.value)">
-          <option value="출석" ${r.status==='출석'?'selected':''}>출석</option>
-          <option value="지각" ${r.status==='지각'?'selected':''}>지각</option>
-          <option value="결석" ${r.status==='결석'?'selected':''}>결석</option>
-          <option value="공결" ${r.status==='공결'?'selected':''}>공결</option>
-          <option value="미출석" ${r.status==='미출석'?'selected':''}>미출석</option>
-        </select>
-      </td>
-      <td class="tm">${r.time || '-'}</td>
-    </tr>
-  `).join('');
 
-  openModal(`
-    <div class="modal fc" style="max-width:600px;" onclick="event.stopPropagation()">
-      <h3>[${esc(a.title)}] 출결 상세 관리</h3>
-      <div style="max-height:50vh; overflow-y:auto; margin:1rem 0;">
-        <table class="tb">
-          <thead><tr><th>이름</th><th>소속</th><th>상태 변경</th><th>체크시간</th></tr></thead>
-          <tbody>${rows}</tbody>
+  const trs = targetUsers.map(u => {
+    const r = records.find(x => String(x.uid) === String(u.id) || String(x.userId) === String(u.id));
+    let st = '미출석';
+    let timeStr = '-';
+    let note = '';
+
+    if (r) {
+      st = r.status || '미출석';
+      timeStr = r.time || '-';
+      note = r.note || r.excuse || '';
+    }
+
+    if (st === '출석') present++;
+    else if (st === '지각') late++;
+    else if (st === '사유' || st === '공결') excused++;
+    else absent++;
+
+    const badgeCls = st === '출석' ? 'b-gr' : (st === '지각' ? 'b-ye' : (st === '사유' || st === '공결' ? 'b-bl' : 'b-re'));
+
+    return `
+      <tr>
+        <td><strong>${esc(u.name)}</strong></td>
+        <td><span class="badge b-gy" style="font-size:11px;">${esc(u.group || '—')}</span></td>
+        <td><span class="badge ${badgeCls}">${st}</span></td>
+        <td class="tm" style="font-size:12px; font-family:monospace;">${timeStr}</td>
+        <td>
+          <select class="fc" style="padding:2px 4px; font-size:11px; width:auto;" onchange="updateMemberAttStatus('${a.id}', '${u.id}', this.value)">
+            <option value="출석" ${st === '출석' ? 'selected' : ''}>출석</option>
+            <option value="지각" ${st === '지각' ? 'selected' : ''}>지각</option>
+            <option value="사유" ${st === '사유' ? 'selected' : ''}>사유</option>
+            <option value="결석" ${st === '결석' ? 'selected' : ''}>결석</option>
+            <option value="미출석" ${st === '미출석' ? 'selected' : ''}>미출석</option>
+          </select>
+        </td>
+      </tr>`;
+  }).join('');
+
+  const modalContent = `
+    <div class="modal fc" style="max-width:650px;" onclick="event.stopPropagation()">
+      <div class="c-hd" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="c-title">[${esc(a.title)}] 실시간 출석 현황</div>
+        <div class="tm" style="font-size:12px;">${fmt(a.date)} · ${esc(a.target_group || '전체')} 대상</div>
+      </div>
+      <div style="display:flex; gap:8px; margin:1rem 0; flex-wrap:wrap;">
+        <div class="badge b-gr" style="font-size:13px; padding:4px 10px;">출석: ${present}명</div>
+        <div class="badge b-ye" style="font-size:13px; padding:4px 10px;">지각: ${late}명</div>
+        <div class="badge b-bl" style="font-size:13px; padding:4px 10px;">사유: ${excused}명</div>
+        <div class="badge b-re" style="font-size:13px; padding:4px 10px;">결석/미인증: ${absent}명</div>
+      </div>
+      <div style="max-height:50vh; overflow-y:auto; border:1px solid var(--gray-200); border-radius:8px;">
+        <table class="tb" style="margin:0; width:100%;">
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>소속</th>
+              <th>현재 상태</th>
+              <th>인증 시간</th>
+              <th>수동 변경</th>
+            </tr>
+          </thead>
+          <tbody id="att-modal-tbody">
+            ${trs}
+          </tbody>
         </table>
       </div>
-      <button class="btn btn-o" style="width:100%;" onclick="closeModal()">닫기</button>
-    </div>
-  `);
+      <div class="fr mt1" style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+        <button class="btn btn-o btn-sm" onclick="exportAttCSV('${a.date}')">CSV 다운로드</button>
+        <button class="btn btn-p" onclick="closeModal()">닫기</button>
+      </div>
+    </div>`;
+
+  openModal(modalContent);
 };
 
 window.updateMemberAttStatus = async function(sessionId, uid, newStatus) {
