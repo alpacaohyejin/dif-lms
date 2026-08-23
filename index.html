@@ -681,6 +681,57 @@ window.studyBadges = function(studies) {
   }).join(' ');
 };
 
+// 전체 조/그룹 및 스터디 목록을 동적으로 추출하는 헬퍼
+window.getAllTargetGroups = function() {
+  const groupsSet = new Set(['1조', '2조', '3조', '4조', '5조']);
+  const studiesSet = new Set(['포토샵 기초반 스터디', '포토샵 심화반 스터디', '블렌더 스터디', '일러스트 스터디']);
+
+  // 1. 기존 DB에 저장된 값 병합
+  (DB.groups || []).forEach(g => { if (g && g !== '미지정' && g !== '소속 없음') groupsSet.add(g); });
+  (DB.studies || []).forEach(s => { if (s) studiesSet.add(s); });
+
+  // 2. 현재 등록된 학회원들의 실제 데이터에서 실시간 추출
+  (DB.users || []).forEach(u => {
+    if (u.group && u.group !== '미지정' && u.group !== '소속 없음') groupsSet.add(u.group);
+    if (Array.isArray(u.studies)) {
+      u.studies.forEach(s => { if (s) studiesSet.add(s); });
+    }
+  });
+
+  const groups = Array.from(groupsSet).sort();
+  const studies = Array.from(studiesSet).sort();
+
+  DB.groups = groups;
+  DB.studies = studies;
+
+  return { groups, studies };
+};
+
+// <select> 태그용 <option> HTML 생성 헬퍼
+window.renderGroupOptionsHtml = function(selectedVal = '전체') {
+  const { groups, studies } = window.getAllTargetGroups();
+  
+  let html = `<option value="전체" ${selectedVal === '전체' ? 'selected' : ''}>전체 (정기 세미나/공통)</option>`;
+  
+  if (groups.length > 0) {
+    html += '<optgroup label="── 프로젝트 조 ──">';
+    groups.forEach(g => {
+      html += `<option value="${esc(g)}" ${selectedVal === g ? 'selected' : ''}>${esc(g)}</option>`;
+    });
+    html += '</optgroup>';
+  }
+
+  if (studies.length > 0) {
+    html += '<optgroup label="── 스터디 ──">';
+    studies.forEach(s => {
+      html += `<option value="${esc(s)}" ${selectedVal === s ? 'selected' : ''}>${esc(s)}</option>`;
+    });
+    html += '</optgroup>';
+  }
+
+  return html;
+};
+
 window.avC = function(n) {
   const h = Array.from(n||'').reduce((a,c)=>a+c.charCodeAt(0),0)%5;
   return ['#4ade80','#60a5fa','#f472b6','#fbbf24','#c084fc'][h];
@@ -1336,36 +1387,33 @@ window.viewAsgSubmissions = function(id) {
   if (window.lucide) window.lucide.createIcons();
 };
 
-window.openNewAsgModal = function() {
-  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
-  
-  const groups = DB.groups || [];
-  const studies = DB.studies || [];
-  let groupHtml = '<option value="전체">전체 (정기 과제)</option>';
-  if (groups.length > 0) {
-    groupHtml += '<optgroup label="조 / 프로젝트">';
-    groups.forEach(g => { groupHtml += `<option value="${esc(g)}">${esc(g)}</option>`; });
-    groupHtml += '</optgroup>';
-  }
-  if (studies.length > 0) {
-    groupHtml += '<optgroup label="스터디">';
-    studies.forEach(s => { groupHtml += `<option value="${esc(s)}">${esc(s)}</option>`; });
-    groupHtml += '</optgroup>';
-  }
+window.openNewAsgModal = window.openCreateAsgModal = function() {
+  if (!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
 
-  const h = `<div class="modal fc" onclick="event.stopPropagation()">
-    <h3>새 과제 등록</h3>
-    <div class="fg"><label class="fl">과제명</label><input type="text" id="na-title" class="fc"></div>
-    <div class="fg"><label class="fl">마감일</label><input type="date" id="na-deadline" class="fc"></div>
-    <div class="fg"><label class="fl">대상 그룹</label><select id="na-group" class="fc">${groupHtml}</select></div>
-    <div class="fg"><label class="fl">구글 폼 링크 (URL)</label><input type="text" id="na-url" class="fc" placeholder="https://forms.gle/..."></div>
-    <div class="fg"><label class="fl">제출 확인 비밀코드</label><input type="text" id="na-code" class="fc" placeholder="예: dif_week1"></div>
-    <div class="fg"><label class="fl">과제 안내문</label><textarea id="na-desc" class="fc" rows="3"></textarea></div>
-    <div class="fr mt1"><button class="btn btn-p" onclick="createAsg()">등록</button><button class="btn btn-o" onclick="closeModal()">취소</button></div>
-  </div>`;
-  openModal(h);
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  const defDate = d.toISOString().split('T')[0];
+
+  const html = `
+    <div class="modal fc" style="max-width:550px;" onclick="event.stopPropagation()">
+      <div class="c-hd"><div class="c-title">+ 새 과제 등록</div><button class="btn-lo" onclick="closeModal()">✕</button></div>
+      <div class="fg mt1"><label class="fl">과제명 *</label><input type="text" id="na-title" class="fc" placeholder="예: 1차 브랜딩 시안 제출"></div>
+      <div class="fg"><label class="fl">마감 기한 *</label><input type="date" id="na-deadline" class="fc" value="${defDate}"></div>
+      <div class="fg"><label class="fl">대상 그룹 (조/스터디) *</label>
+        <select id="na-group" class="fc">
+          ${window.renderGroupOptionsHtml('전체')}
+        </select>
+      </div>
+      <div class="fg"><label class="fl">구글 폼 링크 (선택)</label><input type="text" id="na-url" class="fc" placeholder="https://forms.gle/..."></div>
+      <div class="fg"><label class="fl">제출 확인 인증코드 (선택)</label><input type="text" id="na-code" class="fc" placeholder="예: PASS2026"></div>
+      <div class="fg"><label class="fl">과제 안내 및 상세 설명</label><textarea id="na-desc" class="fc" rows="3" placeholder="과제 제출 방식 및 유의사항 안내"></textarea></div>
+      <div class="fr mt1">
+        <button class="btn btn-p" onclick="createAsg()">과제 등록</button>
+        <button class="btn btn-o" onclick="closeModal()">취소</button>
+      </div>
+    </div>`;
+  openModal(html);
 };
-window.openCreateAsgModal = window.openNewAsgModal;
 
 window.createAsg = async function(e) {
   if (e && typeof e.preventDefault === 'function') e.preventDefault();
@@ -1485,10 +1533,8 @@ window.renderAttendance = function() {
           <div class="c-hd"><div class="c-title" style="display:flex;align-items:center;gap:6px;"><i data-lucide="settings" style="width:16px;height:16px;"></i> 출석 코드 관리 (운영진)</div></div>
           <div style="display:flex;gap:7px;margin-top:.75rem;align-items:center;flex-wrap:wrap;">
             <input id="setup-title" class="fc" style="max-width:160px;" placeholder="세미나/스터디명" value="${todaySession ? esc(todaySession.title) : '정기 세미나'}">
-            <select id="setup-target" class="fc" style="max-width:140px;">
-              <option value="전체">전체 대상</option>
-              ${(DB.groups || []).map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}
-              ${(DB.studies || []).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('')}
+            <select id="setup-target" class="fc" style="max-width:180px;">
+              ${window.renderGroupOptionsHtml(window.attSetupState?.targetGroup || '전체')}
             </select>
             <input id="att-code-inp" class="fc" style="max-width:120px;text-transform:uppercase;" placeholder="코드 입력" value="${activeSession ? esc(activeSession.code) : ''}">
             <button class="btn btn-p" onclick="setTodayCode()">코드 발급</button>
