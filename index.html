@@ -354,10 +354,14 @@ window.addEventListener('unhandledrejection', function(e) {
           </div>
           <!-- 달력 -->
           <div class="card">
-            <div class="cal-nav">
-              <button class="cal-nbtn" onclick="calMove(-1)"><i data-lucide="chevron-left"></i> 이전</button>
-              <span class="cal-month" id="cal-title"></span>
-              <button class="cal-nbtn" onclick="calMove(1)">다음 <i data-lucide="chevron-right"></i></button>
+            <div class="cal-nav" style="display:flex; align-items:center; gap:8px;">
+              <button class="btn btn-o btn-icon" onclick="calMove(-1)" title="이전 달" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+                <i data-lucide="chevron-left" style="width:18px; height:18px;"></i>
+              </button>
+              <span id="cal-title" style="font-size:16px; font-weight:700; min-width:110px; text-align:center;"></span>
+              <button class="btn btn-o btn-icon" onclick="calMove(1)" title="다음 달" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+                <i data-lucide="chevron-right" style="width:18px; height:18px;"></i>
+              </button>
             </div>
             <div class="cal-grid" id="cal-hd" style="margin-bottom:3px;"></div>
             <div class="cal-grid" id="cal-body"></div>
@@ -2808,6 +2812,7 @@ window.calMove = function(dir) {
   if (DB.calM > 11) { DB.calM = 0; DB.calY++; }
   if (DB.calM < 0) { DB.calM = 11; DB.calY--; }
   renderCalendar();
+  if (window.lucide) window.lucide.createIcons();
 };
 
 window.renderCalendar = function() {
