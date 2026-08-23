@@ -782,22 +782,7 @@ window.API = {
    * 2. Realtime Subscription
    * 데이터베이스 변경 시 화면을 자동 갱신합니다.
    */
-  setupRealtime: function() {
-    if (window.realtimeChannel || !window.supabaseClient) return;
-    
-    window.realtimeChannel = window.supabaseClient
-      .channel('schema-db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public' }, async (payload) => {
-        // 실시간 변경 시 데이터만 조용히 갱신
-        if (typeof window.API.fetchInitialData === 'function') await window.API.fetchInitialData();
-        const activePage = document.querySelector('.page.active');
-        if (activePage) {
-          const pageId = activePage.id.replace('page-', '');
-          if (typeof window.goPage === 'function') window.goPage(pageId);
-        }
-      })
-      .subscribe();
-  },
+
 
   /**
    * 3. CRUD Helpers
@@ -1055,6 +1040,51 @@ window.goPage = function(page) {
   if (window.lucide) window.lucide.createIcons();
 };
 
+window.setupRealtime = function() {
+  if (!window.supabaseClient) return;
+
+  // 기존 채널이 있다면 정리 후 재연결
+  if (window.realtimeChannel) {
+    window.supabaseClient.removeChannel(window.realtimeChannel);
+  }
+
+  window.realtimeChannel = window.supabaseClient
+    .channel('dif-lms-realtime-room')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public' },
+      async (payload) => {
+        console.log('⚡ [Realtime Change Detected]:', payload.table, payload.eventType);
+        
+        // 1. 전체 최신 데이터 즉시 재동기화
+        if (window.API && typeof window.API.fetchInitialData === 'function') {
+          await window.API.fetchInitialData();
+        }
+
+        // 2. 현재 활성화되어 있는 페이지 UI 즉시 실시간 리렌더링
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+          const pageId = activePage.id.replace('page-', '');
+          if (pageId === 'attendance' && typeof renderAttendance === 'function') {
+            renderAttendance();
+          } else if (pageId === 'dashboard' && typeof renderDashboard === 'function') {
+            renderDashboard();
+          } else if (pageId === 'assignments' && typeof renderAssignments === 'function') {
+            renderAssignments(window.curAsgTab || 'ongoing');
+          } else if (pageId === 'members' && typeof renderMembers === 'function') {
+            renderMembers();
+          }
+        }
+
+        // 3. 알림 뱃지 실시간 갱신
+        if (typeof updateNotifyBadge === 'function') updateNotifyBadge();
+      }
+    )
+    .subscribe((status) => {
+      console.log('📡 Realtime Status:', status);
+    });
+};
+
 // 안전한 세션 체크 1회 보장
 let isChecked = false;
 window.checkSession = async function() {
@@ -1065,8 +1095,8 @@ window.checkSession = async function() {
     if (window.API && typeof window.API.fetchInitialData === 'function') {
       await window.API.fetchInitialData();
     }
-    if (window.API && typeof window.API.setupRealtime === 'function') {
-      window.API.setupRealtime();
+    if (typeof window.setupRealtime === 'function') {
+      window.setupRealtime();
     }
 
     const savedUser = sessionStorage.getItem('dif_user_session') || localStorage.getItem('dif_user');
