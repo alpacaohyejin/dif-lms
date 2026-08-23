@@ -1548,60 +1548,123 @@ window.closeAttendanceSession = async function(sessionId) {
 };
 
 window.setTodayCode = async function() {
-  const code = document.getElementById('att-code-inp')?.value.trim().toUpperCase();
-  const title = document.getElementById('setup-title')?.value.trim() || '정기 세미나';
-  const target = document.getElementById('setup-target')?.value || '전체';
+  const codeInp = document.getElementById('att-code-inp');
+  const titleInp = document.getElementById('setup-title');
+  const targetSelect = document.getElementById('setup-target');
+
+  const rawCode = codeInp ? codeInp.value : '';
+  const code = rawCode.replace(/\s+/g, '').toUpperCase(); // 모든 공백 제거 후 대문자 변환
+  const title = (titleInp && titleInp.value.trim()) || '정기 세미나';
+  const targetGroup = targetSelect ? targetSelect.value : '전체';
+
   if (!code) return toast('출석 코드를 입력해주세요.', 'err');
 
   const today = new Date().toISOString().split('T')[0];
   let targetUsers = (DB.users || []).filter(u => u.status === 'active');
-  if (target !== '전체') {
-    targetUsers = targetUsers.filter(u => u.group === target || (Array.isArray(u.studies) && u.studies.includes(target)));
+  if (targetGroup !== '전체') {
+    targetUsers = targetUsers.filter(u => 
+      u.group === targetGroup || (Array.isArray(u.studies) && u.studies.includes(targetGroup))
+    );
   }
 
-  const records = targetUsers.map(u => ({ uid: u.id, name: u.name, group: u.group, status: '미출석', time: '-' }));
+  const initialRecords = targetUsers.map(u => ({
+    uid: u.id,
+    userId: u.id,
+    name: u.name,
+    group: u.group || '',
+    status: '미출석',
+    time: '-'
+  }));
 
   try {
-    const { error } = await window.supabaseClient.from('attendance').insert([{
-      date: today, title, target_group: target, code, records
-    }]);
+    const payload = {
+      date: today,
+      title: title,
+      target_group: targetGroup,
+      code: code,
+      records: initialRecords
+    };
+
+    const { error } = await window.supabaseClient
+      .from('attendance')
+      .insert([payload]);
+
     if (error) throw error;
 
-    toast('출석 세션이 설정되었습니다.', 'ok');
+    toast(`출석 코드가 발급되었습니다: [${code}]`, 'ok');
     if (window.API) await window.API.fetchInitialData();
     renderAttendance();
   } catch (err) {
-    toast('세션 생성 실패: ' + err.message, 'err');
+    console.error('setTodayCode error:', err);
+    toast('출석 코드 발급 실패: ' + err.message, 'err');
   }
 };
 
 window.submitAttCode = async function() {
-  const code = document.getElementById('my-att-code')?.value.trim().toUpperCase();
-  if (!code) return toast('코드를 입력해주세요.', 'err');
-  const today = new Date().toISOString().split('T')[0];
-  const tA = (DB.attendance || []).find(a => a.date === today);
+  const input = document.getElementById('my-att-code');
+  const rawInputCode = input ? input.value : '';
+  const inputCode = rawInputCode.replace(/\s+/g, '').toUpperCase(); // 입력값 공백 제거 및 대문자 변환
+  const currentUser = DB.currentUser;
 
-  if (!tA || tA.code !== code) return toast('출석 코드가 일치하지 않습니다.', 'err');
+  if (!currentUser) return toast('로그인이 필요합니다.', 'err');
+  if (!inputCode) return toast('출석 코드를 입력해주세요.', 'err');
 
-  const u = DB.currentUser;
-  let records = Array.isArray(tA.records) ? [...tA.records] : [];
-  let myIdx = records.findIndex(r => String(r.uid) === String(u.id));
+  // 활성화된 세션 중 코드가 일치하는 세션을 우선 검색
+  const sessions = (DB.attendance || []).slice().reverse();
+  const session = sessions.find(a => {
+    if (!a.code) return false;
+    const sessionCode = String(a.code).replace(/\s+/g, '').toUpperCase();
+    return sessionCode === inputCode;
+  });
 
-  const nowTime = new Date().toTimeString().slice(0, 5);
-  if (myIdx >= 0) {
-    records[myIdx].status = '출석';
-    records[myIdx].time = nowTime;
+  if (!session) {
+    return toast('출석 코드가 올바르지 않거나 이미 마감된 세션입니다.', 'err');
+  }
+
+  // 대상자 여부 확인
+  const isTarget = session.target_group === '전체' || 
+                   session.target_group === currentUser.group || 
+                   (Array.isArray(currentUser.studies) && currentUser.studies.includes(session.target_group));
+
+  let records = Array.isArray(session.records) ? [...session.records] : [];
+  let myRecord = records.find(r => String(r.uid) === String(currentUser.id) || String(r.userId) === String(currentUser.id));
+
+  const now = new Date();
+  const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  if (myRecord) {
+    if (myRecord.status === '출석') {
+      return toast('이미 출석 인증이 완료된 상태입니다.', 'ok');
+    }
+    myRecord.status = '출석';
+    myRecord.time = nowTime;
   } else {
-    records.push({ uid: u.id, name: u.name, group: u.group, status: '출석', time: nowTime });
+    records.push({
+      uid: currentUser.id,
+      userId: currentUser.id,
+      name: currentUser.name,
+      group: currentUser.group || '',
+      status: '출석',
+      time: nowTime
+    });
   }
 
   try {
-    const { error } = await window.supabaseClient.from('attendance').update({ records }).eq('id', tA.id);
+    const { error } = await window.supabaseClient
+      .from('attendance')
+      .update({ records: records })
+      .eq('id', session.id);
+
     if (error) throw error;
-    toast('출석 체크가 완료되었습니다! ✅', 'ok');
+
+    toast('출석 인증이 완료되었습니다! ✅', 'ok');
+    if (input) input.value = '';
+    
     if (window.API) await window.API.fetchInitialData();
     renderAttendance();
+    if (typeof renderDashboard === 'function') renderDashboard();
   } catch (err) {
+    console.error('submitAttCode error:', err);
     toast('출석 처리 실패: ' + err.message, 'err');
   }
 };
