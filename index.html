@@ -11,7 +11,219 @@
   crossorigin
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
 />
-<link rel="stylesheet" href="./css/style.css?v=1787377781017">
+<style>
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+:root{
+  --blue:#2753ae;--blue-light:#e8edf8;--blue-dark:#1a3d8a;
+  --yellow:#ffc629;--yellow-light:#fff8e1;--yellow-dark:#e6a800;
+  --gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;
+  --gray-300:#dee2e6;--gray-500:#adb5bd;--gray-600:#6c757d;
+  --gray-700:#495057;--gray-800:#343a40;--gray-900:#212529;
+  --red:#dc3545;--green:#28a745;
+  --r-sm:6px;--r-md:12px;--r-lg:24px;
+}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+body{background:var(--gray-100);color:var(--gray-900);font-size:14px;line-height:1.6;}
+/* AUTH */
+#auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;}
+.auth-wrap{width:100%;max-width:420px;padding:2rem;}
+.auth-logo{text-align:center;margin-bottom:1.75rem;}
+.logo-box{width:52px;height:52px;background:var(--blue);border-radius:var(--r-md);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;margin-bottom:.65rem;}
+.auth-logo h1{font-size:21px;font-weight:700;color:var(--blue);}
+.auth-logo p{font-size:13px;color:var(--gray-600);margin-top:3px;}
+.auth-div{width:32px;height:3px;background:var(--yellow);margin:.6rem auto;border-radius:2px;}
+.auth-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:1.6rem;}
+.auth-tabs{display:flex;border-bottom:1px solid var(--gray-200);margin-bottom:1.1rem;}
+.auth-tab{flex:1;padding:.55rem;text-align:center;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .2s;}
+.auth-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+/* FORMS */
+.fg{margin-bottom:.85rem;}
+.fl{display:block;font-size:12px;font-weight:500;color:var(--gray-700);margin-bottom:4px;}
+.fc{width:100%;padding:.52rem .78rem;border:1px solid var(--gray-300);border-radius:var(--r-md);font-size:13px;font-family:inherit;color:var(--gray-900);outline:none;transition:border-color .2s;}
+.fc:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(39,83,174,.1);}
+select.fc{cursor:pointer;} textarea.fc{resize:vertical;}
+/* BTN */
+.btn{padding:.52rem .95rem;border-radius:var(--r-md);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-p{background:var(--blue);color:#fff;} .btn-p:hover{background:var(--blue-dark);}
+.btn-y{background:var(--yellow);color:var(--gray-900);} .btn-y:hover{background:var(--yellow-dark);}
+.btn-o{background:#fff;border:1px solid var(--gray-300);color:var(--gray-700);} .btn-o:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.btn-d{background:var(--red);color:#fff;} .btn-d:hover{background:#c82333;}
+.btn-sm{padding:.26rem .6rem;font-size:12px;} .btn-fw{width:100%;justify-content:center;}
+/* LAYOUT */
+#app{display:none;min-height:100vh;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:218px;background:var(--blue);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+.s-hd{padding:1rem 1rem .8rem;border-bottom:1px solid rgba(255,255,255,.15);}
+.s-logo{display:flex;align-items:center;gap:8px;}
+.s-logo-icon{width:32px;height:32px;background:var(--yellow);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--gray-900);flex-shrink:0;}
+.s-logo-text{color:#fff;font-size:14px;font-weight:700;}
+.s-logo-sub{color:rgba(255,255,255,.55);font-size:10px;display:block;}
+.s-nav{padding:.65rem 0;flex:1;overflow-y:auto;}
+.nl{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;padding:.45rem 1rem .2rem;}
+.ni{display:flex;align-items:center;gap:7px;padding:.46rem 1rem;color:rgba(255,255,255,.75);cursor:pointer;font-size:13px;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit;}
+.ni:hover{background:rgba(255,255,255,.1);color:#fff;} .ni.active{background:rgba(255,255,255,.16);color:#fff;font-weight:500;}
+.n-icon{font-size:15px;width:20px;}
+.n-badge{margin-left:auto;background:var(--yellow);color:var(--gray-900);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.s-user{padding:.8rem 1rem;border-top:1px solid rgba(255,255,255,.15);}
+.s-uinfo{display:flex;align-items:center;gap:7px;margin-bottom:.55rem;}
+.u-av{width:29px;height:29px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:var(--gray-900);flex-shrink:0;}
+.u-name{color:#fff;font-size:12px;font-weight:500;} .u-role{color:rgba(255,255,255,.5);font-size:10px;}
+.btn-lo{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-size:12px;padding:.28rem .65rem;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;width:100%;transition:all .15s;}
+.btn-lo:hover{background:rgba(255,255,255,.2);color:#fff;}
+.main{margin-left:218px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--gray-200);padding:0 1.4rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.topbar h2{font-size:15px;font-weight:600;}
+.content{padding:1.2rem;flex:1;}
+/* PAGES */
+.page{display:none;} .page.active{display:block;}
+/* CARD */
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:1.2rem;margin-bottom:1rem;}
+.c-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;padding-bottom:.65rem;border-bottom:1px solid var(--gray-100);}
+.c-title{font-size:14px;font-weight:600;} .c-sub{font-size:12px;color:var(--gray-500);margin-top:1px;}
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1rem;}
+.sc{background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:1rem;}
+.sl{font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px;}
+.sv{font-size:25px;font-weight:700;}
+.sv.bl{color:var(--blue);} .sv.ye{color:var(--yellow-dark);} .sv.re{color:var(--red);} .sv.gr{color:var(--green);}
+.ss{font-size:11px;color:var(--gray-500);margin-top:2px;}
+/* TABLE */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.4px;padding:.42rem .65rem;border-bottom:1px solid var(--gray-200);background:var(--gray-50);}
+td{padding:.56rem .65rem;font-size:13px;color:var(--gray-800);border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+tr:last-child td{border-bottom:none;} tr:hover td{background:var(--gray-50);}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500;}
+.b-bl{background:var(--blue-light);color:var(--blue);} .b-ye{background:var(--yellow-light);color:#8a6800;}
+.b-gr{background:#e8f5e9;color:#1b5e20;} .b-re{background:#fce4ec;color:#b71c1c;} .b-gy{background:var(--gray-100);color:var(--gray-600);}
+/* RANK */
+.rank{display:inline-block;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;}
+.r-chief{background:var(--blue);color:#fff;} .r-vp{background:#1a3d8a;color:#fff;}
+.r-exec{background:var(--yellow);color:var(--gray-900);} .r-member{background:var(--gray-200);color:var(--gray-700);}
+/* AVATAR */
+.av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--gray-600);
+}
+.av0{background:var(--blue-light);color:var(--blue);} .av1{background:var(--yellow-light);color:#8a6800;}
+.av2{background:#e8f5e9;color:#1b5e20;} .av3{background:#fce4ec;color:#b71c1c;}
+/* PROGRESS */
+.prog{height:5px;background:var(--gray-200);border-radius:3px;overflow:hidden;}
+.pb{height:100%;border-radius:3px;transition:width .3s;}
+.pb-bl{background:var(--blue);} .pb-gr{background:var(--green);} .pb-re{background:var(--red);}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+/* MODAL */
+.m-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal{background:#fff;border-radius:var(--r-lg);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+.m-hd{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem .85rem;border-bottom:1px solid var(--gray-200);}
+.m-title{font-size:15px;font-weight:600;}
+.m-x{background:none;border:none;cursor:pointer;font-size:18px;color:var(--gray-500);padding:.2rem;line-height:1;}
+.m-bd{padding:1.2rem;} .m-ft{padding:.85rem 1.2rem;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:7px;}
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--gray-200);margin-bottom:1rem;}
+.tab-btn{padding:.55rem .9rem;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .15s;}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab-btn:hover:not(.active){color:var(--gray-700);}
+/* FILTER ROW */
+.fr{display:flex;gap:7px;margin-bottom:.9rem;align-items:center;flex-wrap:wrap;}
+.si{max-width:230px;padding:.46rem .68rem;border:1px solid var(--gray-300);border-radius:var(--r-md);font-size:13px;font-family:inherit;outline:none;}
+.si:focus{border-color:var(--blue);}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--gray-900);color:#fff;padding:.65rem 1.05rem;border-radius:var(--r-md);font-size:13px;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{background:var(--green);} .toast.err{background:var(--red);} .toast.warn{background:#f57c00;}
+/* ALERT */
+.al{padding:.65rem .9rem;border-radius:var(--r-md);font-size:13px;margin-bottom:.85rem;display:flex;align-items:flex-start;gap:7px;}
+.al-i{background:var(--blue-light);color:var(--blue-dark);border:1px solid #b3c6eb;}
+.al-w{background:var(--yellow-light);color:#7a5800;border:1px solid #ffd97a;}
+.al-ok{background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7;}
+.al-e{background:#fce4ec;color:#b71c1c;border:1px solid #f48fb1;}
+/* EMPTY */
+.empty{text-align:center;padding:2rem 1rem;color:var(--gray-500);}
+.empty-icon{font-size:32px;margin-bottom:.6rem;}
+.empty h3{font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:.3rem;}
+/* ASSIGN ITEM */
+.ai{border:1px solid var(--gray-200);border-radius:var(--r-md);padding:.85rem;margin-bottom:.65rem;transition:border-color .15s;}
+.ai:hover{border-color:var(--blue);}
+/* PROFILE */
+.ph{display:flex;align-items:center;gap:1rem;padding:1.2rem;background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);margin-bottom:1rem;}
+.pav{width:62px;height:62px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--blue);flex-shrink:0;}
+/* FILE ICONS */
+.fi{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:5px;font-size:9px;font-weight:700;flex-shrink:0;}
+.fi-pdf{background:#fde8e8;color:#c62828;} .fi-psd{background:#e3f2fd;color:#1565c0;}
+.fi-ai{background:#fff3e0;color:#e65100;} .fi-png{background:#e8f5e9;color:#2e7d32;} .fi-etc{background:var(--gray-100);color:var(--gray-600);}
+/* LOG */
+.lc{border:1px solid var(--gray-200);border-radius:var(--r-md);padding:.85rem;margin-bottom:.65rem;}
+.lc:hover{border-color:var(--blue);}
+.log-cat{display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:600;margin-bottom:4px;}
+.lc-m{background:#e3f2fd;color:#0d47a1;} .lc-w{background:#e8f5e9;color:#1b5e20;}
+.lc-d{background:#fff3e0;color:#bf360c;} .lc-n{background:var(--blue-light);color:var(--blue-dark);} .lc-e{background:var(--gray-100);color:var(--gray-600);}
+/* NOTIFY */
+.ni-item{display:flex;align-items:flex-start;justify-content:space-between;padding:.58rem 0;border-bottom:1px solid var(--gray-100);gap:7px;}
+.nl-item{display:flex;align-items:flex-start;gap:8px;padding:.55rem 0;border-bottom:1px solid var(--gray-100);font-size:13px;}
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;}
+.cal-nbtn{background:none;border:1px solid var(--gray-300);border-radius:var(--r-sm);padding:.28rem .65rem;cursor:pointer;font-family:inherit;font-size:13px;color:var(--gray-700);}
+.cal-nbtn:hover{border-color:var(--blue);color:var(--blue);}
+.cal-month{font-size:15px;font-weight:600;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dh{text-align:center;font-size:11px;font-weight:600;color:var(--gray-500);padding:.35rem 0;}
+.cal-d{min-height:70px;border:1px solid var(--gray-200);border-radius:var(--r-sm);padding:4px;background:#fff;transition:border-color .15s;}
+.cal-d.editable{cursor:pointer;} .cal-d.editable:hover{border-color:var(--blue);}
+.cal-d.other{background:var(--gray-50);}
+.cal-d.today{border-color:var(--blue);background:var(--blue-light);}
+.cal-dn{font-size:11px;font-weight:600;color:var(--gray-700);margin-bottom:2px;}
+.cal-d.today .cal-dn{color:var(--blue);} .cal-d.other .cal-dn{color:var(--gray-500);}
+.cal-sun .cal-dn{color:#e53935;} .cal-sat .cal-dn{color:var(--blue);}
+.cal-ev{font-size:10px;padding:1px 4px;border-radius:3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ce-bl{background:var(--blue-light);color:var(--blue);} .ce-ye{background:var(--yellow-light);color:#8a6800;}
+.ce-re{background:#fce4ec;color:#b71c1c;} .ce-gr{background:#e8f5e9;color:#1b5e20;}
+/* SEMESTER DROPDOWN */
+.sem-wrap{position:relative;display:inline-block;}
+.sem-badge{background:var(--blue-light);color:var(--blue);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;border:none;font-family:inherit;}
+.sem-dd{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-md);box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:210px;z-index:200;padding:.45rem;}
+.sem-dd h4{font-size:10px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;padding:.28rem .5rem;margin-bottom:.25rem;}
+.sem-opt{display:flex;align-items:center;justify-content:space-between;padding:.4rem .55rem;border-radius:var(--r-sm);cursor:pointer;font-size:13px;transition:background .15s;}
+.sem-opt:hover{background:var(--gray-50);} .sem-opt.active{background:var(--blue-light);color:var(--blue);font-weight:500;}
+.sem-add{display:flex;gap:5px;padding:.45rem .45rem 0;border-top:1px solid var(--gray-200);margin-top:.25rem;}
+/* ATT STATUS */
+.as-ok{background:#e8f5e9;color:#1b5e20;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;}
+.as-lt{background:var(--yellow-light);color:#8a6800;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;}
+.as-ex{background:var(--blue-light);color:var(--blue-dark);padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;}
+.as-ab{background:#fce4ec;color:#b71c1c;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600;}
+.as-nn{background:var(--gray-100);color:var(--gray-500);padding:2px 7px;border-radius:3px;font-size:11px;}
+/* KAKAO */
+.kk{background:#fae100;border-radius:var(--r-lg);padding:.9rem;}
+.kk-b{background:#fff;border-radius:12px;padding:.65rem .9rem;margin-top:.65rem;font-size:13px;line-height:1.6;max-width:250px;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+.ml-auto{margin-left:auto;} .tm{color:var(--gray-500);font-size:12px;} .mt1{margin-top:.5rem;}
+.dv{height:1px;background:var(--gray-200);margin:.85rem 0;}
+@media(max-width:900px){
+  .sg{grid-template-columns:repeat(2,1fr);} .g2{grid-template-columns:1fr;}
+  .sidebar{width:52px;} .s-logo-text,.ni span,.nl,.s-uinfo div,.n-badge{display:none;}
+  .main{margin-left:52px;} .ni{justify-content:center;}
+}
+
+  /* ===== SUPABASE STORAGE ===== */
+  .storage-config-banner{background:var(--yellow-light);border:1px solid var(--yellow);border-radius:var(--r-md);padding:.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:10px;font-size:13px;}
+  .storage-config-banner strong{color:#7a5800;}
+  .upload-progress{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;margin-top:.5rem;}
+  .upload-progress-bar{height:100%;background:var(--blue);border-radius:3px;transition:width .3s;}
+  .sb-badge{display:inline-flex;align-items:center;gap:4px;background:#e8f5e9;color:#1b5e20;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+  .cat-folder{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;}
+  .api-key-input{background:var(--gray-50);border:1px dashed var(--gray-300);border-radius:var(--r-md);padding:1rem;margin-bottom:1rem;}
+
+</style>
 
 <!-- 외부 라이브러리 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -365,12 +577,2113 @@ window.addEventListener('unhandledrejection', function(e) {
 </div>
 <div id="modal-root"></div>
 <div class="toast" id="toast"></div>
-<!-- 스크립트 로드 순서 및 상대 경로 지정 -->
-<script src="./js/utils.js"></script>
-<script src="./js/api.js"></script>
-<script src="./js/auth.js"></script>
-<script src="./js/assignments.js"></script>
-<script src="./js/attendance.js"></script>
-<script src="./js/admin_members.js"></script>
+<!-- 스크립트 로드 순서 및 절대 경로 지정 -->
+<script>
+
+/* --- utils.js --- */
+// 전역 DB 안전 초기화
+window.DB = window.DB || {
+  currentUser: null,
+  users: [],
+  attendance: [],
+  assignments: [],
+  groups: [],
+  semesters: ['2026-2', '2026-1'],
+  currentSem: '2026-2',
+  notifications: []
+};
+
+// 권한 판별 헬퍼
+window.isAdmin = function(u) {
+  if (!u) return false;
+  return ['학회장', '부학회장', '운영진', '관리자', 'admin'].includes(u.rank);
+};
+
+// 아바타 배경색 헬퍼
+window.avC = function(name) {
+  if (!name) return '#2563eb';
+  const colors = ['#2563eb', '#059669', '#d97706', '#7c3aed', '#db2777', '#4f46e5'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+};
+
+// HTML 이스케이프 헬퍼
+window.esc = function(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+window.toast = function(msg, type='') {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  
+  // Convert common emojis to Lucide icons
+  let parsedMsg = msg
+    .replace(/✅/g, '<i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px;"></i>')
+    .replace(/❌/g, '<i data-lucide="x-circle" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px;"></i>')
+    .replace(/⚠️/g, '<i data-lucide="alert-triangle" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px;"></i>')
+    .replace(/⏳/g, '<i data-lucide="clock" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px;"></i>');
+    
+  t.innerHTML = parsedMsg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.className = 'toast', 2800);
+};
+
+window.fmt = function(dStr) {
+  if(!dStr) return '';
+  const d = new Date(dStr);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+};
+
+window.dUntil = function(dStr) {
+  const dl = new Date(dStr);
+  dl.setHours(23, 59, 59, 999);
+  const now = new Date();
+  const diff = dl - now;
+  if(diff < 0) return '마감됨';
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  return d > 0 ? `D-${d}` : `${h}시간 후`;
+};
+
+window.rCls = function(r) {
+  return r==='출석'?'b-gr':r==='결석'?'b-re':r==='지각'?'b-ye':'b-gy';
+};
+
+window.canMng = function(u) {
+  return u && (u.rank === '학회장' || u.rank === '부학회장' || u.rank === '임원진');
+};
+
+window.isAdmin = function(u) {
+  return u && (u.rank === '학회장' || u.rank === '부학회장');
+};
+
+window.esc = function(s) {
+  if (!s) return '';
+  return String(s).replace(/[&<>'"]/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[c]));
+};
+
+window.studyBadges = function(studies) {
+  if (!studies || !studies.length) return '<span class="badge b-gy" style="font-size:10px;">스터디 없음</span>';
+  return studies.map(s => {
+    if (s === '포토샵 기초') return '<span class="badge b-ye" style="font-size:10px; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="camera" style="width:12px;height:12px;"></i> 포토샵 기초</span>';
+    if (s === '포토샵 심화+AI') return '<span class="badge b-bl" style="font-size:10px; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="bot" style="width:12px;height:12px;"></i> 포토샵 심화+AI</span>';
+    if (s === '블렌더 스터디') return '<span class="badge b-gr" style="font-size:10px; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="box" style="width:12px;height:12px;"></i> 블렌더 스터디</span>';
+    return `<span class="badge b-gy" style="font-size:10px;">${esc(s)}</span>`;
+  }).join(' ');
+};
+
+window.avC = function(n) {
+  const h = Array.from(n||'').reduce((a,c)=>a+c.charCodeAt(0),0)%5;
+  return ['#4ade80','#60a5fa','#f472b6','#fbbf24','#c084fc'][h];
+};
+
+window.openModal = function(html) {
+  const divCount = (html.match(/<div/g) || []).length;
+  const closeDivCount = (html.match(/<\/div>/g) || []).length;
+  if (divCount > closeDivCount) {
+    html += '</div>'.repeat(divCount - closeDivCount);
+  }
+  
+  const ov = document.createElement('div');
+  ov.className = 'm-ov';
+  ov.innerHTML = html;
+  ov.addEventListener('click', e => {
+    if(e.target === ov) closeModal();
+  });
+  document.getElementById('modal-root').appendChild(ov);
+};
+
+window.closeModal = function() {
+  document.getElementById('modal-root').innerHTML = '';
+};
+
+window.dlCSV = function(h, rows, fn) {
+  let c = '\uFEFF' + h.join(',') + '\n';
+  rows.forEach(r => {
+    c += r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',') + '\n';
+  });
+  const u = URL.createObjectURL(new Blob([c], {type: 'text/csv;charset=utf-8;'}));
+  const l = document.createElement('a'); l.href = u; l.download = fn; l.click(); URL.revokeObjectURL(u);
+};
+
+
+
+/* --- api.js --- */
+// Supabase 설정 및 초기화
+// 프로젝트 설정에 맞게 YOUR_SUPABASE_URL과 YOUR_ANON_KEY를 교체해주세요.
+const SUPABASE_URL = 'https://fwuiikhbzxwhxxxdrhaz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_0lLh_FgNd-9llsLe3MtvcQ_shBLmYrr';
+
+if (window.supabase && typeof window.supabase.createClient === 'function') {
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} else {
+  console.error('Supabase CDN is not loaded properly.');
+}
+
+window.API = {
+  /**
+   * 1. Data Fetcher
+   * 앱 실행(initApp) 시 전체 데이터를 불러와 로컬 DB 객체에 맵핑합니다.
+   */
+  fetchInitialData: async function() {
+    try {
+      const [
+        { data: users, error: err1 },
+        { data: attendance, error: err2 },
+        { data: assignments, error: err3 },
+        { data: team_logs, error: err4 },
+        { data: notifications, error: err5 },
+        { data: cal_events, error: err6 }
+      ] = await Promise.all([
+        window.supabaseClient.from('users').select('*'),
+        window.supabaseClient.from('attendance').select('*'),
+        window.supabaseClient.from('assignments').select('*'),
+        window.supabaseClient.from('team_logs').select('*'),
+        window.supabaseClient.from('notifications').select('*'),
+        window.supabaseClient.from('cal_events').select('*')
+      ]);
+
+      // Supabase 데이터를 로컬 구조체에 할당 (에러가 없는 경우에만)
+      DB.users = (users || []).map(u => ({ ...u, studentId: u.student_id, group: u.group_name }));
+      DB.attendance = (attendance || []).map(a => ({ ...a, targetGroup: a.target_group }));
+      DB.assignments = (assignments || []).map(a => ({
+        ...a,
+        id: a.id,
+        title: a.title,
+        date: a.date,
+        deadline: a.deadline,
+        group: a.group_name || a.group || '전체',
+        desc: a.desc_text || a.desc || '',
+        formUrl: a.form_url || a.formUrl || '',
+        submitCode: a.submit_code || a.submitCode || '',
+        submissions: Array.isArray(a.submissions) ? a.submissions : []
+      }));
+      DB.teamLogs = (team_logs || []).map(l => ({ ...l, group: l.group_name }));
+      DB.notifications = (notifications || []).map(n => ({ ...n, userId: n.user_id, isRead: n.is_read, senderName: n.sender_name }));
+      DB.calEvents = cal_events || [];
+
+      console.log('✅ Supabase 데이터 Fetch 성공');
+    } catch (err) {
+      console.error('❌ Supabase 데이터 Fetch 실패:', err);
+      toast('데이터를 불러오는데 실패했습니다.', 'err');
+    }
+  },
+
+  /**
+   * 2. Realtime Subscription
+   * 데이터베이스 변경 시 화면을 자동 갱신합니다.
+   */
+  setupRealtime: function() {
+    if (window.realtimeChannel || !window.supabaseClient) return;
+    
+    window.realtimeChannel = window.supabaseClient
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public' }, async (payload) => {
+        // 실시간 변경 시 데이터만 조용히 갱신
+        if (typeof window.API.fetchInitialData === 'function') await window.API.fetchInitialData();
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+          const pageId = activePage.id.replace('page-', '');
+          if (typeof window.goPage === 'function') window.goPage(pageId);
+        }
+      })
+      .subscribe();
+  },
+
+  /**
+   * 3. CRUD Helpers
+   * 각 기능별로 Supabase에 데이터를 쓰거나 수정하는 헬퍼 함수들입니다.
+   * 비동기 처리(async/await)이므로 호출부도 리팩토링이 필요합니다.
+   */
+  
+  insertUser: async function(userData) {
+    // map to supabase schema
+    const dataToInsert = { ...userData, student_id: userData.studentId, group_name: userData.group };
+    delete dataToInsert.studentId; delete dataToInsert.group;
+    const { data, error } = await window.supabaseClient.from('users').insert([dataToInsert]).select();
+    if (error) throw error;
+    return data;
+  },
+
+  updateUser: async function(userId, updateData) {
+    const dataToUpdate = { ...updateData };
+    if(dataToUpdate.studentId !== undefined) { dataToUpdate.student_id = dataToUpdate.studentId; delete dataToUpdate.studentId; }
+    if(dataToUpdate.group !== undefined) { dataToUpdate.group_name = dataToUpdate.group; delete dataToUpdate.group; }
+    
+    const { data, error } = await window.supabaseClient.from('users').update(dataToUpdate).eq('id', userId).select();
+    if (error) throw error;
+    return data;
+  },
+
+  addAttendance: async function(attData) {
+    const dataToInsert = { ...attData, target_group: attData.targetGroup };
+    delete dataToInsert.targetGroup;
+    const { data, error } = await window.supabaseClient.from('attendance').insert([dataToInsert]).select();
+    if (error) throw error;
+    return data;
+  },
+  
+  updateAttendanceRecords: async function(attId, records) {
+    const { data, error } = await window.supabaseClient.from('attendance').update({ records }).eq('id', attId).select();
+    if (error) throw error;
+    return data;
+  },
+
+  addAssignment: async function(asgData) {
+    const dataToInsert = { ...asgData, group_name: asgData.group, desc_text: asgData.desc };
+    delete dataToInsert.group; delete dataToInsert.desc;
+    const { data, error } = await window.supabaseClient.from('assignments').insert([dataToInsert]).select();
+    if (error) throw error;
+    return data;
+  },
+  
+  submitAssignment: async function(asgId, submissionsArray) {
+    const { data, error } = await window.supabaseClient.from('assignments').update({ submissions: submissionsArray }).eq('id', asgId).select();
+    if (error) throw error;
+    return data;
+  },
+
+  addTeamLog: async function(logData) {
+    const dataToInsert = { ...logData, group_name: logData.group };
+    delete dataToInsert.group;
+    const { data, error } = await window.supabaseClient.from('team_logs').insert([dataToInsert]).select();
+    if (error) throw error;
+    return data;
+  },
+
+  addCalEvent: async function(eventData) {
+    const { data, error } = await window.supabaseClient.from('cal_events').insert([eventData]).select();
+    if (error) throw error;
+    return data;
+  },
+  
+  deleteCalEvent: async function(eventId) {
+    const { error } = await window.supabaseClient.from('cal_events').delete().eq('id', eventId);
+    if (error) throw error;
+    return true;
+  }
+};
+
+
+/* --- auth.js --- */
+window.switchAuthTab = function(t) {
+  const loginTab = document.getElementById('tab-login');
+  const regTab = document.getElementById('tab-register');
+  if (loginTab) loginTab.style.display = t === 'login' ? 'block' : 'none';
+  if (regTab) regTab.style.display = t === 'register' ? 'block' : 'none';
+  
+  const tabs = document.querySelectorAll('.auth-tab');
+  if(tabs.length >= 2) {
+    tabs[0].className = 'auth-tab ' + (t === 'login' ? 'active' : '');
+    tabs[1].className = 'auth-tab ' + (t === 'register' ? 'active' : '');
+  }
+};
+
+window.showApp = function() {
+  const authScreen = document.getElementById('auth-screen');
+  const appScreen = document.getElementById('app-screen') || document.getElementById('app');
+  if (authScreen) authScreen.style.display = 'none';
+  if (appScreen) appScreen.style.display = 'block';
+};
+
+window.showAuth = function() {
+  const authScreen = document.getElementById('auth-screen');
+  const appScreen = document.getElementById('app-screen') || document.getElementById('app');
+  if (authScreen) authScreen.style.display = 'flex';
+  if (appScreen) appScreen.style.display = 'none';
+};
+
+window.doLogout = function() {
+  if(confirm('로그아웃 하시겠습니까?')) {
+    DB.currentUser = null;
+    sessionStorage.removeItem('dif_user_session');
+    localStorage.removeItem('dif_user');
+    showAuth();
+  }
+};
+
+window.handleLogin = async function(e) {
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+  const idInput = document.getElementById('login-email') || document.getElementById('login-id');
+  const pwInput = document.getElementById('login-password') || document.getElementById('login-pw');
+
+  if (!idInput || !pwInput) return alert('로그인 입력 필드를 찾을 수 없습니다.');
+  const inputId = idInput.value.trim();
+  const inputPw = pwInput.value.trim();
+
+  if (!inputId || !inputPw) return toast('아이디와 비밀번호를 입력해주세요.', 'err');
+
+  try {
+    let user = (DB.users || []).find(u => 
+      (u.email === inputId || String(u.studentId) === inputId || String(u.student_id) === inputId) && 
+      (u.pw === inputPw || u.password === inputPw)
+    );
+
+    if (!user && window.supabaseClient) {
+      const { data, error } = await window.supabaseClient
+        .from('users')
+        .select('*')
+        .or(`email.eq.${inputId},student_id.eq.${inputId}`);
+
+      if (!error && data && data.length > 0) {
+        const found = data.find(d => d.password === inputPw || d.pw === inputPw);
+        if (found) {
+          user = { ...found, studentId: found.student_id, group: found.group_name };
+        }
+      }
+    }
+
+    if (!user) return toast('아이디 또는 비밀번호가 일치하지 않습니다.', 'err');
+    if (user.status === 'pending') return alert('가입 승인 대기 중인 계정입니다.');
+    if (user.status === 'inactive') return alert('비활성화된 계정입니다.');
+
+    const formattedUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      pw: user.pw || user.password,
+      studentId: user.studentId || user.student_id,
+      dept: user.dept,
+      group: user.group || user.group_name || '미지정',
+      rank: user.rank || '학회원',
+      status: user.status || 'active',
+      avatar: user.avatar || (user.name ? user.name[0] : '학'),
+      studies: Array.isArray(user.studies) ? user.studies : []
+    };
+
+    DB.currentUser = formattedUser;
+    sessionStorage.setItem('dif_user_session', JSON.stringify(formattedUser));
+    localStorage.setItem('dif_user', JSON.stringify(formattedUser));
+    
+    toast(`${formattedUser.name}님 환영합니다!`, 'ok');
+    initApp();
+  } catch (err) {
+    console.error('Login error:', err);
+    toast('로그인 오류: ' + err.message, 'err');
+  }
+};
+window.doLogin = window.handleLogin;
+
+window.doRegister = async function() {
+  const name = document.getElementById('reg-name')?.value.trim();
+  const email = document.getElementById('reg-email')?.value.trim();
+  const sid = document.getElementById('reg-sid')?.value.trim();
+  const dept = document.getElementById('reg-dept')?.value.trim();
+  const pw = document.getElementById('reg-pw')?.value;
+
+  if(!name || !email || !sid || !pw) return toast('모든 필수 항목을 입력해주세요.', 'err');
+
+  const newUser = {
+    name, email, password: pw, pw, student_id: sid, dept: dept || '미지정',
+    group_name: '미지정', rank: '학회원', status: 'pending', studies: []
+  };
+
+  try {
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('users').insert([newUser]);
+      if (error) throw error;
+    }
+    toast('가입 신청 완료! 운영진 승인 후 이용 가능합니다.', 'ok');
+    switchAuthTab('login');
+  } catch(err) {
+    toast('가입 신청 실패: ' + err.message, 'err');
+  }
+};
+
+window.initApp = function() {
+  const u = DB.currentUser;
+  if (!u) { showAuth(); return; }
+
+  showApp();
+
+  const sName = document.getElementById('sidebar-name');
+  if(sName) sName.textContent = u.name;
+  const sRole = document.getElementById('sidebar-role');
+  if(sRole) sRole.textContent = u.rank;
+  const sAv = document.getElementById('sidebar-avatar');
+  if(sAv) {
+    sAv.innerHTML = `<i data-lucide="circle-user-round" class="w-8 h-8 text-white" style="width:32px;height:32px;color:white;"></i>`;
+    sAv.style.background = 'transparent';
+  }
+
+  const adminNav = document.getElementById('admin-nav');
+  if(adminNav) adminNav.style.display = isAdmin(u) ? 'block' : 'none';
+
+  goPage('dashboard');
+  if (typeof updateNotifyBadge === 'function') updateNotifyBadge();
+  if (typeof updateSemUI === 'function') updateSemUI();
+};
+
+window.goPage = function(page) {
+  const u = DB.currentUser;
+  if(!u) return;
+
+  document.querySelectorAll('.ni').forEach(e => {
+    const oc = e.getAttribute('onclick');
+    if (oc && oc.includes(`goPage('${page}')`)) e.classList.add('active');
+    else e.classList.remove('active');
+  });
+
+  document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+  const targetPage = document.getElementById(`page-${page}`);
+  if(targetPage) targetPage.classList.add('active');
+
+  const titles = { dashboard: '대시보드', attendance: '출석체크', assignments: '과제 관리', members: '학회원 명단', profile: '내 프로필', files: '작업물 보관함', teamlog: '팀 로그', notify: '알림 보내기', admin: '관리자 설정' };
+  const pt = document.getElementById('page-title');
+  if(pt) pt.textContent = titles[page] || '대시보드';
+
+  if (page === 'dashboard' && typeof renderDashboard === 'function') renderDashboard();
+  if (page === 'attendance' && typeof renderAttendance === 'function') renderAttendance();
+  if (page === 'assignments' && typeof renderAssignments === 'function') renderAssignments('ongoing');
+  if (page === 'members' && typeof renderMembers === 'function') renderMembers();
+  if (page === 'profile' && typeof renderProfile === 'function') renderProfile();
+  if (page === 'files' && typeof renderFiles === 'function') renderFiles();
+  if (page === 'teamlog' && typeof renderLogs === 'function') renderLogs();
+  if (page === 'notify' && typeof renderNotify === 'function') renderNotify();
+  if (page === 'admin' && typeof renderAdmin === 'function') renderAdmin();
+
+  if (window.lucide) window.lucide.createIcons();
+};
+
+// 안전한 세션 체크 1회 보장
+let isChecked = false;
+window.checkSession = async function() {
+  if (isChecked) return;
+  isChecked = true;
+
+  try {
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
+    if (window.API && typeof window.API.setupRealtime === 'function') {
+      window.API.setupRealtime();
+    }
+
+    const savedUser = sessionStorage.getItem('dif_user_session') || localStorage.getItem('dif_user');
+    if (savedUser) {
+      const uObj = JSON.parse(savedUser);
+      const freshUser = (DB.users || []).find(u => String(u.id) === String(uObj.id)) || uObj;
+      DB.currentUser = freshUser;
+      initApp();
+    } else {
+      showAuth();
+    }
+  } catch (err) {
+    console.error('Init error:', err);
+    showAuth();
+  }
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkSession);
+} else {
+  checkSession();
+}
+
+
+/* --- assignments.js --- */
+window.switchAsgTab = function(t, btn) {
+  document.querySelectorAll('#page-assignments .tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    // 버튼 인자가 넘어오지 않았을 때 텍스트 기준으로 fallback 활성화
+    const buttons = document.querySelectorAll('#page-assignments .tab-btn');
+    buttons.forEach(b => {
+      if ((t === 'ongoing' && b.textContent.includes('진행')) ||
+          (t === 'submitted' && b.textContent.includes('제출')) ||
+          (t === 'overdue' && b.textContent.includes('마감')) ||
+          (t === 'all' && b.textContent.includes('전체'))) {
+        b.classList.add('active');
+      }
+    });
+  }
+  renderAssignments(t);
+};
+
+window.renderAssignments = function(tab = 'ongoing') {
+  if(!DB || !DB.currentUser) return;
+  const u = DB.currentUser;
+  const now = new Date();
+  const el = document.getElementById('asg-content');
+
+  const isAdmin = u && (
+    u.rank === '학회장' || 
+    u.rank === '부학회장' || 
+    u.rank === '운영진' || 
+    u.rank === '관리자' || 
+    u.rank === 'admin' ||
+    u.group === '운영진'
+  );
+
+  const headerContainer = document.getElementById('asg-header-container');
+  if (headerContainer) {
+    headerContainer.innerHTML = `
+      <div class="asg-header flex justify-between items-center mb-4" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div>
+          <h2 class="text-xl font-bold" style="margin:0; font-size:1.25rem;">과제 관리</h2>
+          <p class="text-sm text-gray-500" style="margin:0; font-size:0.875rem; color:var(--gray-500); margin-top:4px;">진행 중인 과제와 제출 현황을 확인합니다.</p>
+        </div>
+        ${isAdmin ? `<button class="btn btn-p btn-primary" onclick="typeof openCreateAsgModal === 'function' ? openCreateAsgModal() : openNewAsgModal()">+ 과제 등록</button>` : ''}
+      </div>
+    `;
+  }
+
+  const allSubTab = document.getElementById('all-sub-tab');
+  if (allSubTab) allSubTab.style.display = isAdmin ? 'inline-block' : 'none';
+  
+  if(tab === 'all' && isAdmin) { renderAllSub(el); return; }
+  
+  window.isPastDeadline = function(deadlineStr) {
+    if (!deadlineStr) return false;
+    // 시간 정보가 없는 YYYY-MM-DD 포맷인 경우 해당 일자 23:59:59까지 유효하도록 처리
+    const dlDate = deadlineStr.length <= 10 ? new Date(`${deadlineStr}T23:59:59`) : new Date(deadlineStr);
+    return new Date() > dlDate;
+  };
+  
+  let asgns = (DB?.assignments||[]).filter(a => {
+    const sub = (a.submissions||[]).find(s => String(s.userId) === String(u.id) || String(s.uid) === String(u.id));
+    const isPast = window.isPastDeadline(a.deadline);
+    if(tab === 'ongoing') return !isPast && !sub;
+    if(tab === 'submitted') return !!sub;
+    if(tab === 'overdue') return isPast && !sub;
+    return true;
+  });
+  
+  if(!isAdmin) asgns = asgns.filter(a => a.group === '전체' || a.group === u.group);
+  
+  if(!asgns.length) {
+    const msgs = {ongoing:'진행 중인 과제가 없습니다', submitted:'제출 완료한 과제가 없습니다', overdue:'마감 지난 미제출 과제가 없습니다'};
+    el.innerHTML = `<div class="empty">${msgs[tab]}</div>`;
+    return;
+  }
+  
+  el.innerHTML = asgns.map(a => {
+    const sub = (a.submissions||[]).find(s => String(s.userId) === String(u.id) || String(s.uid) === String(u.id));
+    let badge = '', bCls = '';
+    const isPast = window.isPastDeadline(a.deadline);
+    
+    if(sub) { badge = '제출 완료'; bCls = 'b-gr'; }
+    else if(isPast) { badge = '미제출 (마감)'; bCls = 'b-re'; }
+    else { badge = '진행 중'; bCls = 'b-bl'; }
+    
+    let parsedDesc = a.desc || '';
+    let formUrl = a.formUrl || a.form_url || '';
+    let submitCode = a.submitCode || a.submit_code || '';
+    try {
+      const obj = JSON.parse(a.desc);
+      if (obj.text) parsedDesc = obj.text;
+      if (obj.formUrl) formUrl = obj.formUrl;
+      if (obj.submitCode) submitCode = obj.submitCode;
+    } catch (e) {
+      // It's just plain text
+    }
+
+    return `<div class="card asg-item" style="margin-bottom:1rem; cursor:default; position:relative;">
+      <div class="c-hd">
+        <div class="c-title">${esc(a.title)}</div>
+        <div class="c-sub">${fmt(a.date)} ~ ${fmt(a.deadline)} (${dUntil(a.deadline)}) <span class="badge ${bCls}">${badge}</span></div>
+      </div>
+      <div style="font-size:14px; margin-bottom:.5rem;">${esc(parsedDesc).replace(/\n/g, '<br>')}</div>
+      ${formUrl ? `<a href="${esc(formUrl)}" target="_blank" class="btn btn-o btn-sm" style="display:inline-block; margin-bottom:1rem; align-items:center;"><i data-lucide="link" style="width:14px;height:14px;margin-right:4px;vertical-align:middle;"></i> 과제 제출 구글 폼 바로가기</a>` : ''}
+      <div class="tm" style="margin-bottom:1rem;">대상: ${esc(a.group)}</div>
+      
+      ${sub ? `<div class="mt1" style="color:var(--green); font-weight:bold; display:flex; align-items:center;"><i data-lucide="check-circle" style="width:16px;height:16px;margin-right:4px;"></i> 제출 완료 (${fmt(sub.submittedAt || sub.date)})</div>` 
+            : (!isPast ? `<div class="mt1" style="display:flex; gap:5px; align-items:center;">
+                 <input type="text" id="code-${a.id}" class="fc" placeholder="제출 확인 코드 입력" style="max-width:200px; margin:0;">
+                 <button class="btn btn-p" onclick="doSubmitAsg('${a.id}')">제출 완료하기</button>
+               </div>` : `<div class="mt1" style="color:var(--red); font-weight:bold; display:flex; align-items:center;"><i data-lucide="x-circle" style="width:16px;height:16px;margin-right:4px;"></i> 제출 기한 마감</div>`)}
+               
+      ${isAdmin ? `<button class="btn btn-o" style="padding:.2rem .4rem; font-size:11px; position:absolute; bottom:1rem; right:1rem;" onclick="event.stopPropagation(); delAsg('${a.id}')">삭제</button>` : ''}
+    </div>`;
+  }).join('');
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.renderAllSub = function(el) {
+  let html = '<div class="card" style="margin-bottom:1rem;"><div class="c-hd"><div class="c-title">전체 제출 현황 (관리자)</div></div>';
+  (DB?.assignments||[]).forEach(a => {
+    const st = getAsgStats(a);
+    html += `<div style="padding:.5rem 0; border-bottom:1px solid var(--gray-200);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><strong>${esc(a.title)}</strong> <span class="tm" style="font-size:12px;">${fmt(a.deadline)} 마감</span></div>
+        <div style="font-size:13px;"><span style="color:var(--green)">제출 ${st.sub}</span> / <span style="color:var(--red)">미제출 ${st.unsub}</span></div>
+      </div>
+      <button class="btn btn-o mt1" style="font-size:12px; padding:.3rem .5rem;" onclick="viewAsgSubmissions('${a.id}')">제출 현황 보기</button>
+    </div>`;
+  });
+  el.innerHTML = html + '</div>';
+};
+
+window.doSubmitAsg = async function(asgId) {
+  const a = (DB?.assignments||[]).find(x => String(x.id) === String(asgId));
+  if (!a) return;
+  const input = document.getElementById(`code-${asgId}`);
+  const code = input ? input.value.trim() : '';
+  if (!code) return toast('확인 코드를 입력해주세요.', 'err');
+
+  let submitCode = a.submitCode || a.submit_code || '';
+  try {
+    const obj = JSON.parse(a.desc);
+    if (obj.submitCode) submitCode = obj.submitCode;
+  } catch (e) {}
+
+  if (submitCode && code !== submitCode) {
+    return toast('제출 확인 코드가 일치하지 않습니다. 구글 폼 제출 후 안내된 코드를 확인하세요.', 'err');
+  }
+
+  const u = DB.currentUser;
+  const newSub = {
+    userId: u.id,
+    uid: u.id,
+    name: u.name,
+    studentId: u.studentId || '',
+    dept: u.dept || '',
+    group: u.group || '',
+    submittedAt: new Date().toISOString(),
+    status: '제출완료'
+  };
+
+  const updatedSubmissions = [...(a.submissions||[]), newSub];
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('assignments')
+      .update({ submissions: updatedSubmissions })
+      .eq('id', asgId);
+    if (error) throw error;
+    toast('과제 제출이 완료되었습니다!', 'ok');
+    
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
+    if (typeof renderAssignments === 'function') renderAssignments();
+    if (typeof renderDashboard === 'function') renderDashboard();
+  } catch (err) {
+    console.error('doSubmitAsg error:', err);
+    toast('과제 제출 실패: ' + err.message, 'err');
+  }
+};
+
+window.viewAsgSubmissions = function(id) {
+  const a = (DB?.assignments||[]).find(x => String(x.id) === String(id));
+  if(!a) return;
+  let targetUsers = (DB.users||[]).filter(u => u.status === 'active');
+  if(a.group !== '전체') targetUsers = targetUsers.filter(u => u.group === a.group);
+  
+  let h = `<div class="modal fc" style="max-width:700px;" onclick="event.stopPropagation()">
+    <h3>[${esc(a.title)}] 제출 현황</h3>
+    <div style="max-height:60vh; overflow-y:auto;" class="mt1">
+    <table class="tb" style="margin:0;"><thead><tr><th>조/소속</th><th>이름</th><th>상태</th><th>제출 시각</th></tr></thead><tbody>`;
+  
+  targetUsers.forEach(u => {
+    const s = (a.submissions||[]).find(x => String(x.userId) === String(u.id) || String(x.uid) === String(u.id));
+    const submittedAt = s && (s.submittedAt || s.date) ? new Date(s.submittedAt || s.date).toLocaleString() : '—';
+    h += `<tr>
+      <td>${esc(u.group)}</td>
+      <td>${esc(u.name)}</td>
+      <td><span class="badge ${s?'b-gr':'b-re'}">${s?'제출완료':'미제출'}</span></td>
+      <td class="tm">${submittedAt}</td>
+    </tr>`;
+  });
+  
+  h += `</tbody></table></div>
+    <button class="btn btn-o mt1" style="width:100%;" onclick="closeModal()">닫기</button>
+  </div>`;
+  openModal(h);
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.openNewAsgModal = function() {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  
+  const groups = DB.groups || [];
+  const studies = DB.studies || [];
+  let groupHtml = '<option value="전체">전체 (정기 과제)</option>';
+  if (groups.length > 0) {
+    groupHtml += '<optgroup label="조 / 프로젝트">';
+    groups.forEach(g => { groupHtml += `<option value="${esc(g)}">${esc(g)}</option>`; });
+    groupHtml += '</optgroup>';
+  }
+  if (studies.length > 0) {
+    groupHtml += '<optgroup label="스터디">';
+    studies.forEach(s => { groupHtml += `<option value="${esc(s)}">${esc(s)}</option>`; });
+    groupHtml += '</optgroup>';
+  }
+
+  const h = `<div class="modal fc" onclick="event.stopPropagation()">
+    <h3>새 과제 등록</h3>
+    <div class="fg"><label class="fl">과제명</label><input type="text" id="na-title" class="fc"></div>
+    <div class="fg"><label class="fl">마감일</label><input type="date" id="na-deadline" class="fc"></div>
+    <div class="fg"><label class="fl">대상 그룹</label><select id="na-group" class="fc">${groupHtml}</select></div>
+    <div class="fg"><label class="fl">구글 폼 링크 (URL)</label><input type="text" id="na-url" class="fc" placeholder="https://forms.gle/..."></div>
+    <div class="fg"><label class="fl">제출 확인 비밀코드</label><input type="text" id="na-code" class="fc" placeholder="예: dif_week1"></div>
+    <div class="fg"><label class="fl">과제 안내문</label><textarea id="na-desc" class="fc" rows="3"></textarea></div>
+    <div class="fr mt1"><button class="btn btn-p" onclick="createAsg()">등록</button><button class="btn btn-o" onclick="closeModal()">취소</button></div>
+  </div>`;
+  openModal(h);
+};
+window.openCreateAsgModal = window.openNewAsgModal;
+
+window.createAsg = async function(e) {
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+
+  const titleInput = document.getElementById('asg-title') || document.getElementById('na-title');
+  const deadlineInput = document.getElementById('asg-deadline') || document.getElementById('na-deadline');
+  const groupSelect = document.getElementById('asg-target-group') || document.getElementById('na-group');
+  const descInput = document.getElementById('asg-desc') || document.getElementById('asg-desc-text') || document.getElementById('na-desc');
+  const formUrlInput = document.getElementById('asg-form-url') || document.getElementById('na-url');
+  const submitCodeInput = document.getElementById('asg-submit-code') || document.getElementById('na-code');
+
+  const title = titleInput ? titleInput.value.trim() : '';
+  const deadline = deadlineInput ? deadlineInput.value.trim() : '';
+  const groupName = groupSelect ? groupSelect.value : '전체';
+  const descText = descInput ? descInput.value.trim() : '';
+  const formUrl = formUrlInput ? formUrlInput.value.trim() : '';
+  const submitCode = submitCodeInput ? submitCodeInput.value.trim() : '';
+
+  if (!title) return toast('과제 제목을 입력해주세요.', 'err');
+  if (!deadline) return toast('마감 기한을 설정해주세요.', 'err');
+
+  const today = typeof getTodayStr === 'function' ? getTodayStr() : new Date().toISOString().slice(0, 10);
+
+  const payload = {
+    title: title,
+    date: today,
+    deadline: deadline,
+    group_name: groupName,
+    desc_text: descText,
+    desc: descText,
+    form_url: formUrl,
+    submit_code: submitCode,
+    submissions: []
+  };
+
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('assignments')
+      .insert([payload])
+      .select();
+
+    if (error) {
+      console.error('Supabase createAsg error:', error);
+      throw error;
+    }
+
+    toast('과제가 성공적으로 등록되었습니다!', 'ok');
+    
+    // 모달 닫기 및 폼 초기화
+    if (typeof closeCreateAsgModal === 'function') {
+      closeCreateAsgModal();
+    } else if (typeof closeModal === 'function') {
+      closeModal();
+    } else {
+      const modal = document.getElementById('create-asg-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
+    if (typeof renderAssignments === 'function') renderAssignments();
+    if (typeof renderDashboard === 'function') renderDashboard();
+  } catch (err) {
+    console.error('createAsg exception:', err);
+    toast('과제 등록 실패: ' + (err.message || '데이터베이스 오류'), 'err');
+  }
+};
+
+window.delAsg = async function(id) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if(!confirm('정말 이 과제를 삭제하시겠습니까?')) return;
+  
+  if(window.supabaseClient) {
+    try {
+      await window.supabaseClient.from('assignments').delete().eq('id', id);
+    } catch (err) {
+      return toast('과제 삭제 실패', 'err');
+    }
+  }
+  
+  toast('과제가 삭제되었습니다.', 'ok');
+  if (window.API && typeof window.API.fetchInitialData === 'function') {
+    await window.API.fetchInitialData();
+  }
+  renderAssignments('ongoing');
+};
+
+window.getAsgStats = function(a) {
+  let u = (DB.users||[]).filter(x => x.status === 'active');
+  if(a.group !== '전체') u = u.filter(x => x.group === a.group);
+  let sub = 0;
+  u.forEach(x => { if((a.submissions||[]).find(s => String(s.userId) === String(x.id) || String(s.uid) === String(x.id))) sub++; });
+  return { sub, unsub: u.length - sub };
+};
+
+
+/* --- attendance.js --- */
+window.renderAttendance = function() {
+  if (!DB || !DB.currentUser) return;
+  const u = DB.currentUser;
+  const isOfficer = isAdmin(u) || canMng(u);
+  const today = new Date().toISOString().split('T')[0];
+  const tA = (DB?.attendance || []).find(a => a.date === today);
+
+  // 1. 관리자 출석 코드 발급 패널
+  const ap = document.getElementById('att-admin-panel');
+  if (ap) {
+    if (isOfficer) {
+      ap.style.display = 'block';
+      ap.innerHTML = `
+        <div class="card" style="margin-bottom:1rem; padding:1.25rem;">
+          <div class="c-hd"><div class="c-title" style="display:flex;align-items:center;gap:6px;"><i data-lucide="settings" style="width:16px;height:16px;"></i> 출석 코드 관리 (운영진)</div></div>
+          <div style="display:flex;gap:7px;margin-top:.75rem;align-items:center;flex-wrap:wrap;">
+            <input id="setup-title" class="fc" style="max-width:160px;" placeholder="세미나/스터디명" value="${esc(window.attSetupState?.title || '')}">
+            <select id="setup-target" class="fc" style="max-width:140px;">
+              <option value="전체">전체</option>
+              ${(DB.groups || []).map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}
+              ${(DB.studies || []).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('')}
+            </select>
+            <input id="att-code-inp" class="fc" style="max-width:120px;text-transform:uppercase;" placeholder="코드 입력" value="${tA ? esc(tA.code || '') : ''}">
+            <button class="btn btn-p" onclick="setTodayCode()">설정</button>
+          </div>
+        </div>`;
+    } else {
+      ap.style.display = 'none';
+    }
+  }
+
+  // 2. 학회원 출석체크 패널
+  const mp = document.getElementById('att-member-panel');
+  if (mp) {
+    const myRec = tA ? (tA.records || []).find(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)) : null;
+    const isTarget = tA && (tA.target_group === '전체' || tA.target_group === u.group || (Array.isArray(u.studies) && u.studies.includes(tA.target_group)));
+
+    if (!tA || !tA.code) {
+      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">현재 진행 중인 출석체크가 없습니다.</div>`;
+    } else if (!isTarget) {
+      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">오늘은 귀하의 출석 대상 세션이 아닙니다.</div>`;
+    } else if (myRec && myRec.status === '출석') {
+      mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--green);font-weight:bold;margin-bottom:1rem;"><i data-lucide="check-circle" style="width:20px;height:20px;vertical-align:-4px;margin-right:6px;"></i> 오늘 출석 완료되었습니다! (${myRec.time || '인증됨'})</div>`;
+    } else {
+      mp.innerHTML = `
+        <div class="card" style="padding:1.25rem;margin-bottom:1rem;">
+          <div class="c-hd"><div class="c-title">✅ 오늘의 출석체크 (${esc(tA.title)})</div></div>
+          <div style="display:flex;gap:7px;margin-top:.75rem;">
+            <input id="my-att-code" class="fc" style="max-width:200px;text-transform:uppercase;" placeholder="출석 코드 입력">
+            <button class="btn btn-p" onclick="submitAttCode()">출석 인증</button>
+          </div>
+        </div>`;
+    }
+  }
+
+  // 3. 출석체크 현황 리스트 (임원진 전용 권한 제어)
+  const histContainer = document.getElementById('att-history');
+  if (histContainer) {
+    let sessions = (DB.attendance || []).slice().reverse();
+    if (!isOfficer) {
+      histContainer.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--gray-500);">출석 현황 리스트 열람 권한이 없습니다.</td></tr>';
+      return;
+    }
+
+    if (sessions.length === 0) {
+      histContainer.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;">출석 세션 기록이 없습니다.</td></tr>';
+    } else {
+      histContainer.innerHTML = sessions.map(a => {
+        const records = Array.isArray(a.records) ? a.records : [];
+        let att = 0, late = 0, abs = 0;
+        records.forEach(r => {
+          if (r.status === '출석') att++;
+          else if (r.status === '지각') late++;
+          else abs++;
+        });
+
+        return `
+          <tr>
+            <td><strong>${esc(a.title)}</strong></td>
+            <td>${fmt(a.date)}</td>
+            <td><span class="badge b-gy">${esc(a.target_group || '전체')}</span></td>
+            <td><span style="color:var(--green)">출석 ${att}</span> / <span style="color:var(--yellow-dark)">지각 ${late}</span> / <span style="color:var(--red)">결석 ${abs}</span> (총 ${records.length}명)</td>
+            <td>
+              <button class="btn btn-o btn-sm" onclick="openAttDetailModal('${a.id}')">상세보기</button>
+              <button class="btn btn-d btn-sm" style="margin-left:4px;" onclick="deleteAttendanceSession('${a.id}')">삭제</button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+  }
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.setTodayCode = async function() {
+  const code = document.getElementById('att-code-inp')?.value.trim().toUpperCase();
+  const title = document.getElementById('setup-title')?.value.trim() || '정기 세미나';
+  const target = document.getElementById('setup-target')?.value || '전체';
+  if (!code) return toast('출석 코드를 입력해주세요.', 'err');
+
+  const today = new Date().toISOString().split('T')[0];
+  let targetUsers = (DB.users || []).filter(u => u.status === 'active');
+  if (target !== '전체') {
+    targetUsers = targetUsers.filter(u => u.group === target || (Array.isArray(u.studies) && u.studies.includes(target)));
+  }
+
+  const records = targetUsers.map(u => ({ uid: u.id, name: u.name, group: u.group, status: '미출석', time: '-' }));
+
+  try {
+    const { error } = await window.supabaseClient.from('attendance').insert([{
+      date: today, title, target_group: target, code, records
+    }]);
+    if (error) throw error;
+
+    toast('출석 세션이 설정되었습니다.', 'ok');
+    if (window.API) await window.API.fetchInitialData();
+    renderAttendance();
+  } catch (err) {
+    toast('세션 생성 실패: ' + err.message, 'err');
+  }
+};
+
+window.submitAttCode = async function() {
+  const code = document.getElementById('my-att-code')?.value.trim().toUpperCase();
+  if (!code) return toast('코드를 입력해주세요.', 'err');
+  const today = new Date().toISOString().split('T')[0];
+  const tA = (DB.attendance || []).find(a => a.date === today);
+
+  if (!tA || tA.code !== code) return toast('출석 코드가 일치하지 않습니다.', 'err');
+
+  const u = DB.currentUser;
+  let records = Array.isArray(tA.records) ? [...tA.records] : [];
+  let myIdx = records.findIndex(r => String(r.uid) === String(u.id));
+
+  const nowTime = new Date().toTimeString().slice(0, 5);
+  if (myIdx >= 0) {
+    records[myIdx].status = '출석';
+    records[myIdx].time = nowTime;
+  } else {
+    records.push({ uid: u.id, name: u.name, group: u.group, status: '출석', time: nowTime });
+  }
+
+  try {
+    const { error } = await window.supabaseClient.from('attendance').update({ records }).eq('id', tA.id);
+    if (error) throw error;
+    toast('출석 체크가 완료되었습니다! ✅', 'ok');
+    if (window.API) await window.API.fetchInitialData();
+    renderAttendance();
+  } catch (err) {
+    toast('출석 처리 실패: ' + err.message, 'err');
+  }
+};
+
+window.openAttDetailModal = function(sessionId) {
+  const a = (DB.attendance || []).find(x => String(x.id) === String(sessionId));
+  if (!a) return;
+
+  const records = Array.isArray(a.records) ? a.records : [];
+  const rows = records.map(r => `
+    <tr>
+      <td>${esc(r.name)}</td>
+      <td>${esc(r.group || '—')}</td>
+      <td>
+        <select class="fc" style="padding:2px 6px; font-size:12px; width:auto;" onchange="updateMemberAttStatus('${a.id}', '${r.uid}', this.value)">
+          <option value="출석" ${r.status==='출석'?'selected':''}>출석</option>
+          <option value="지각" ${r.status==='지각'?'selected':''}>지각</option>
+          <option value="결석" ${r.status==='결석'?'selected':''}>결석</option>
+          <option value="공결" ${r.status==='공결'?'selected':''}>공결</option>
+          <option value="미출석" ${r.status==='미출석'?'selected':''}>미출석</option>
+        </select>
+      </td>
+      <td class="tm">${r.time || '-'}</td>
+    </tr>
+  `).join('');
+
+  openModal(`
+    <div class="modal fc" style="max-width:600px;" onclick="event.stopPropagation()">
+      <h3>[${esc(a.title)}] 출결 상세 관리</h3>
+      <div style="max-height:50vh; overflow-y:auto; margin:1rem 0;">
+        <table class="tb">
+          <thead><tr><th>이름</th><th>소속</th><th>상태 변경</th><th>체크시간</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <button class="btn btn-o" style="width:100%;" onclick="closeModal()">닫기</button>
+    </div>
+  `);
+};
+
+window.updateMemberAttStatus = async function(sessionId, uid, newStatus) {
+  const a = (DB.attendance || []).find(x => String(x.id) === String(sessionId));
+  if (!a) return;
+
+  let records = Array.isArray(a.records) ? [...a.records] : [];
+  const rec = records.find(r => String(r.uid) === String(uid));
+  if (rec) rec.status = newStatus;
+
+  try {
+    const { error } = await window.supabaseClient.from('attendance').update({ records }).eq('id', sessionId);
+    if (error) throw error;
+    toast(`상태가 '${newStatus}'(으)로 변경되었습니다.`, 'ok');
+    if (window.API) await window.API.fetchInitialData();
+    renderAttendance();
+  } catch (err) {
+    toast('상태 변경 실패: ' + err.message, 'err');
+  }
+};
+
+window.deleteAttendanceSession = async function(sessionId) {
+  if (!confirm('정말로 이 출석체크 기록을 완전히 삭제하시겠습니까?')) return;
+  try {
+    const { error } = await window.supabaseClient.from('attendance').delete().eq('id', sessionId);
+    if (error) throw error;
+    toast('출석 기록이 삭제되었습니다.', 'ok');
+    if (window.API) await window.API.fetchInitialData();
+    renderAttendance();
+  } catch (err) {
+    toast('삭제 실패: ' + err.message, 'err');
+  }
+};
+
+window.sendAttendanceWarning = async function() {
+  const users = (DB.users || []).filter(u => u.status === 'active');
+  const attHistory = DB.attendance || [];
+  const targets = [];
+
+  users.forEach(u => {
+    let penalty = 0;
+    attHistory.forEach(att => {
+      const r = (att.records || []).find(x => String(x.uid) === String(u.id));
+      if (r && (r.status === '지각' || r.status === '결석' || r.status === '미출석')) penalty++;
+    });
+    if (penalty >= 3) targets.push({ ...u, penalty });
+  });
+
+  if (!targets.length) return toast('3회 이상 누적자가 없습니다.', 'ok');
+
+  const names = targets.map(t => `${t.name}(${t.penalty}회)`).join(', ');
+  if (!confirm(`다음 인원에게 경고 알림을 발송하시겠습니까?\n대상: ${names}`)) return;
+
+  try {
+    const payloads = targets.map(t => ({
+      user_id: t.id,
+      title: '⚠️ [출결 경고] 출석 기준 미달 안내',
+      message: `지각/결석이 총 ${t.penalty}회 누적되었습니다. 사유서 제출 바랍니다.`,
+      sender_name: '운영진'
+    }));
+
+    await window.supabaseClient.from('notifications').insert(payloads);
+    toast(`${targets.length}명에게 경고 알림을 전송했습니다.`, 'ok');
+  } catch (err) {
+    toast('알림 발송 실패: ' + err.message, 'err');
+  }
+};
+
+
+/* --- admin_members.js --- */
+window.renderDashboard = function() {
+  const u = DB.currentUser;
+  if (!u) return;
+
+  const d = new Date().toISOString().split('T')[0];
+  const tA = (DB?.attendance||[]).find(a => a.date === d);
+  let attMsg = '출석 정보 없음';
+  let attR = '—';
+  let attC = '';
+  if (tA) {
+    const r = tA.records.find(x => String(x.userId) === String(u.id));
+    if (r) {
+      attMsg = '인증 완료';
+      attR = r.status;
+      attC = r.status === '출석' ? 'gr' : (r.status === '결석' ? 're' : (r.status === '지각' ? 'ye' : 'bl'));
+    } else {
+      attMsg = '인증 전';
+      attR = '진행중';
+    }
+  }
+  
+  // 1. s-total
+  const tEl = document.getElementById('s-total');
+  if(tEl) tEl.textContent = (DB.users||[]).filter(x=>x.status==='active').length;
+  const tSub = document.getElementById('s-sem-sub');
+  if(tSub) tSub.textContent = DB.currentSem;
+
+  // 2. s-att
+  const aEl = document.getElementById('s-att');
+  if(aEl) {
+    aEl.textContent = attR;
+    aEl.className = 'sv ' + attC;
+  }
+  const aSub = document.getElementById('s-att-sub');
+  if(aSub) aSub.textContent = attMsg;
+
+  // 3. s-ongoing
+  const ong = document.getElementById('s-ongoing');
+  if(ong) ong.textContent = (DB?.assignments||[]).filter(a => (new Date(a.deadline).setHours(23,59,59,999) >= new Date())).length;
+  
+  // 4. s-overdue
+  const ovd = document.getElementById('s-overdue');
+  if(ovd) ovd.textContent = (DB?.assignments||[]).filter(a => (new Date(a.deadline).setHours(23,59,59,999) < new Date()) && !(a.submissions||[]).find(s=>String(s.userId)===String(u.id))).length;
+
+  // 5. dash-teams (스터디 참가 현황)
+  const dt = document.getElementById('dash-teams');
+  if(dt) {
+    dt.innerHTML = '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:.5rem;">' +
+      (DB?.studies||[]).map(st => {
+        const count = (DB?.users||[]).filter(x => x.status === 'active' && (x.studies||[]).includes(st)).length;
+        return '<div style="background:var(--gray-50); padding:.5rem; border-radius:6px; text-align:center;">' +
+          '<div style="font-size:12px; color:var(--gray-600); margin-bottom:4px;">' + esc(st) + '</div>' +
+          '<div style="font-size:18px; font-weight:700;">' + count + '명</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+  
+  // 6. dash-asg
+  const da = document.getElementById('dash-asg');
+  if (da) {
+    const now = new Date();
+    const in7 = (DB?.assignments||[]).filter(a => {
+        const dl = new Date(a.deadline);
+        dl.setHours(23,59,59,999);
+        const diff = (dl - now) / (1000*60*60*24);
+        return diff >= 0 && diff <= 7;
+    });
+    da.innerHTML = in7.map(a => '<div class="asg-item" style="padding:.5rem;border-bottom:1px solid var(--gray-200);">' + esc(a.title) + ' <span class="badge b-ye" style="float:right;">D-' + Math.floor((new Date(a.deadline) - now)/(1000*60*60*24)) + '</span></div>').join('');
+    if(!in7.length) da.innerHTML = '<div class="empty" style="padding:1rem;">마감 임박 과제가 없습니다.</div>';
+  }
+  
+  // 7. dash-att 
+  const datt = document.getElementById('dash-att');
+  if (datt) {
+    const myAttHistory = (DB.attendance || []).filter(a => {
+      const isTarget = a.target_group === '전체' ||
+        a.target_group === u.group ||
+        (Array.isArray(u.studies) && u.studies.includes(a.target_group)) ||
+        (Array.isArray(a.records) && a.records.some(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)));
+      return isTarget;
+    }).slice(-5).reverse();
+    
+    datt.innerHTML = myAttHistory.map(a => {
+      const r = (a.records||[]).find(x => String(x.uid)===String(u.id) || String(x.userId)===String(u.id));
+      const st = r ? r.status : '미출석';
+      let tmStr = '';
+      if (r && r.timestamp) {
+        const t = new Date(r.timestamp);
+        tmStr = `<div style="font-size:11px; color:var(--gray-500); margin-top:2px;">${t.getHours().toString().padStart(2, '0')}:${t.getMinutes().toString().padStart(2, '0')} 인증</div>`;
+      }
+      
+      const stColor = st === '출석' ? 'green' : (st === '결석' ? 'red' : (st === '지각' ? 'yellow-dark' : (st === '사유' ? 'blue' : 'gray-500')));
+      
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:.65rem; border-bottom:1px solid var(--gray-100);">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--gray-800);">${esc(a.title)}</div>
+            <div style="font-size:11px; color:var(--gray-500); margin-top:3px;">${fmt(a.date)} · ${esc(a.target_group || '전체')} 대상</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:14px; font-weight:700; color:var(--${stColor});">${st}</div>
+            ${tmStr}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    if(!myAttHistory.length) datt.innerHTML = '<div class="empty" style="padding:1rem;">출석 기록이 없습니다.</div>';
+  }
+  
+  if (typeof renderCalendar === 'function') renderCalendar();
+  if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+};
+// --- Members ---
+window.renderMembers = function() {
+  const tbody = document.getElementById('member-tbody');
+  const u = DB.currentUser;
+  let arr = DB.users;
+  const f = DB.mFilter || { name: '', group: '', rank: '', status: '', study: '' };
+  
+  if (f.name) arr = arr.filter(x => x.name.includes(f.name));
+  if (f.group) arr = arr.filter(x => x.group === f.group);
+  if (f.rank) arr = arr.filter(x => x.rank === f.rank);
+  if (f.status) arr = arr.filter(x => x.status === f.status);
+  if (f.study) arr = arr.filter(x => (x.studies||[]).includes(f.study));
+  
+  const cnt = document.getElementById('member-cnt');
+  if(cnt) cnt.textContent = arr.length + '명';
+  
+  if(!tbody) return;
+  if(!arr.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty">조건에 맞는 학회원이 없습니다.</td></tr>'; return; }
+  
+  tbody.innerHTML = arr.map(m => `<tr>
+    <td><div class="av" style="background:var(--gray-100); display:flex; align-items:center; justify-content:center; border-radius:50%; width:32px; height:32px;"><i data-lucide="circle-user" class="w-5 h-5 text-gray-500"></i></div></td>
+    <td><strong>${esc(m.name)}</strong></td>
+    <td style="font-family:monospace;font-size:12px;">${esc(m.studentId)}</td>
+    <td>${esc(m.dept)}</td>
+    <td><span class="badge b-bl" style="font-size:11px;">${esc(m.group||'—')}</span></td>
+    <td><div style="display:flex;gap:3px;flex-wrap:wrap;">${studyBadges(m.studies)}</div></td>
+    <td><span class="rank ${typeof rCls === 'function' ? rCls(m.rank) : 'r-member'}">${esc(m.rank)}</span></td>
+    <td><span class="badge ${m.status==='active'?'b-gr':'b-re'}">${m.status==='active'?'활동 중':'비활성'}</span></td>
+    <td style="white-space:nowrap;">
+      <button class="btn btn-o btn-sm" onclick="viewMemberProfile('${m.id}')">프로필</button>
+      ${canMng(u) ? `<button class="btn btn-o btn-sm" onclick="openMemberModal('${m.id}')" style="margin-left:3px;">편집</button>
+      <button class="btn btn-d btn-sm" onclick="delMember('${m.id}')" style="margin-left:3px;">삭제</button>` : ''}
+    </td>
+  </tr>`).join('');
+};
+
+window.filterM = function(key, val) {
+  if (!DB.mFilter) DB.mFilter = {};
+  DB.mFilter[key] = val;
+  renderMembers();
+};
+
+window.openMemberModal = function(id) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  let m = id ? (DB.users||[]).find(x => String(x.id) === String(id)) : null;
+  let isNew = !m;
+  if (isNew) {
+    m = { name: '', email: '', studentId: '', dept: '', group: '', rank: '학회원', status: 'active', studies: [] };
+  }
+  let html = `<div class="modal fc" onclick="event.stopPropagation()">
+      <h3>${isNew ? '새 학회원 추가' : '학회원 정보 수정'}</h3>
+      <div class="fg"><label class="fl">이름</label><input type="text" id="em-name" class="fc" value="${esc(m.name||'')}"></div>
+      <div class="fg"><label class="fl">이메일</label><input type="email" id="em-email" class="fc" value="${esc(m.email||'')}"></div>
+      <div class="fg"><label class="fl">학번</label><input type="text" id="em-sid" class="fc" value="${esc(m.studentId||'')}"></div>
+      <div class="fg"><label class="fl">학과</label><input type="text" id="em-dept" class="fc" value="${esc(m.dept||'')}"></div>
+      <div class="fg"><label class="fl">소속 조</label>
+          <select id="em-group" class="fc">
+              <option value="">— 미지정 —</option>
+              ${(DB.groups||[]).map(g => `<option ${m.group === g ? 'selected' : ''}>${esc(g)}</option>`).join('')}
+          </select>
+      </div>
+      <div class="fg"><label class="fl">스터디 (다중 선택)</label>
+          <select id="em-study" class="fc" multiple>
+              ${(DB.studies||[]).map(s => `<option ${(m.studies||[]).includes(s) ? 'selected' : ''}>${esc(s)}</option>`).join('')}
+          </select>
+      </div>
+      <div class="fg"><label class="fl">직급</label>
+          <select id="em-rank" class="fc">
+              ${RANKS.map(r => `<option ${m.rank === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}
+          </select>
+      </div>
+      <div class="fg"><label class="fl">상태</label>
+          <select id="em-status" class="fc">
+              ${['active', 'pending', 'inactive'].map(st => `<option ${m.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+          </select>
+      </div>
+      <div class="fr mt1">
+          <button class="btn btn-p" onclick="saveMember('${isNew ? '' : m.id}')">저장</button>
+          <button class="btn btn-o" onclick="closeModal()">취소</button>
+      </div>
+  </div>`;
+  openModal(html);
+};
+
+window.saveMember = async function(id) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  const name = document.getElementById('em-name')?.value.trim();
+  const group = document.getElementById('em-group')?.value.trim();
+  const rank = document.getElementById('em-rank')?.value.trim();
+  const status = document.getElementById('em-status')?.value.trim();
+  const studentId = document.getElementById('em-sid')?.value.trim();
+  const dept = document.getElementById('em-dept')?.value.trim();
+  const email = document.getElementById('em-email')?.value.trim();
+  
+  const opts = document.getElementById('em-study')?.options;
+  let studies = [];
+  if(opts) {
+      for(let i=0; i<opts.length; i++) {
+          if(opts[i].selected) studies.push(opts[i].value);
+      }
+  }
+  
+  let u = id ? (DB.users||[]).find(x => String(x.id) === String(id)) : null;
+  if (u) {
+      const updates = {};
+      if(name) updates.name = name;
+      if(group!==undefined) updates.group = group;
+      if(rank) updates.rank = rank;
+      if(status) updates.status = status;
+      if(studentId!==undefined) updates.studentId = studentId;
+      if(dept!==undefined) updates.dept = dept;
+      if(email!==undefined) updates.email = email;
+      updates.studies = studies;
+      
+      if(window.API) {
+        try { await window.API.updateUser(u.id, updates); } catch(e) { return toast('수정 오류', 'err'); }
+      } else {
+        Object.assign(u, updates);
+      }
+      toast('학회원 정보가 수정되었습니다.', 'ok');
+  } else {
+      if(!name) return toast('이름을 입력해주세요.', 'err');
+      const newId = String(Date.now());
+      const newEmail = email || `${newId}@dif.kr`;
+      const newUser = { id: newId, name, email: newEmail, pw: '1234', studentId: studentId || '20260000', dept: dept || '미지정', group: group || '미지정', rank: rank || '학회원', status: status || 'active', avatar: name[0] || '학', studies };
+      
+      if(window.API) {
+        try { await window.API.insertUser(newUser); } catch(e) { return toast('생성 오류', 'err'); }
+      } else {
+        DB.users.push(newUser);
+      }
+      toast('새 학회원이 추가되었습니다.', 'ok');
+  }
+  closeModal();
+  renderMembers();
+};
+
+window.delMember = function(id) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if(!confirm('정말 이 학회원을 비활성화/삭제 처리하시겠습니까?')) return;
+  const m = (DB.users||[]).find(x => String(x.id) === String(id));
+  if(m) m.status = 'inactive';
+  toast('삭제(비활성화) 처리되었습니다.', 'ok');
+  renderMembers();
+};
+
+window.viewMemberProfile = function(id) {
+  const m = (DB.users||[]).find(x => String(x.id) === String(id));
+  if(!m) return;
+  const html = `<div class="modal fc" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+      <div class="av" style="background:var(--gray-100); display:flex; align-items:center; justify-content:center; border-radius:50%; width:60px; height:60px;"><i data-lucide="circle-user" class="w-10 h-10 text-gray-500" style="width:40px;height:40px;color:var(--gray-500);"></i></div>
+      <div>
+        <h3>${esc(m.name)} <span class="badge b-gy" style="font-size:12px;">${esc(m.rank)}</span></h3>
+        <div class="tm" style="font-size:14px;">${esc(m.dept)} (${esc(m.studentId)})</div>
+      </div>
+    </div>
+    <div style="font-size:14px; margin-bottom:1rem; line-height:1.6;">
+      <div>소속 조: <strong>${esc(m.group)}</strong></div>
+      <div>스터디: ${studyBadges(m.studies)}</div>
+      <div>이메일: ${esc(m.email)}</div>
+      <div>상태: ${m.status==='active'?'<span style="color:var(--green)">활동 중</span>':'<span style="color:var(--red)">비활성/대기</span>'}</div>
+    </div>
+    <button class="btn btn-o mt1" style="width:100%;" onclick="closeModal()">닫기</button>
+  </div>`;
+  openModal(html);
+};
+
+// 출석 통계 계산 헬퍼
+function getProfileAttStats(uid) {
+  const sessions = (DB?.attendance || []).filter(a => (a.records || []).length > 0);
+  let att = 0, late = 0, ex = 0, abs = 0;
+  sessions.forEach(s => {
+    const r = (s.records || []).find(x => String(x.userId) === String(uid));
+    if (r) {
+      if (r.status === '출석') att++;
+      else if (r.status === '지각') late++;
+      else if (r.status === '사유') ex++;
+      else abs++;
+    } else {
+      abs++;
+    }
+  });
+  const total = sessions.length;
+  return { total, att, late, ex, abs, rate: total ? Math.round((att / total) * 100) : 0 };
+}
+
+// 과제 통계 계산 헬퍼
+function getProfileAsgStats(uid, group) {
+  const elig = (DB?.assignments || []).filter(a => a.group === '전체' || a.group === group);
+  const sub = elig.filter(a => (a.submissions || []).find(s => String(s.userId) === String(uid))).length;
+  const total = elig.length;
+  return { total, submitted: sub, rate: total ? Math.round((sub / total) * 100) : 0 };
+}
+
+// 프로필 페이지 렌더링 함수
+window.renderProfile = function() {
+  const u = DB.currentUser;
+  if (!u) return;
+
+  const avEl = document.getElementById('prof-av');
+  if (avEl) {
+    avEl.innerHTML = `<i data-lucide="circle-user-round" class="w-16 h-16 text-gray-600" style="width:64px;height:64px;color:var(--gray-600);"></i>`;
+    avEl.style.background = 'transparent';
+  }
+  
+  const nameEl = document.getElementById('prof-name');
+  if (nameEl) nameEl.textContent = u.name;
+
+  const rankEl = document.getElementById('prof-rank');
+  if (rankEl) {
+    rankEl.textContent = u.rank;
+    rankEl.className = 'rank ' + (typeof rCls === 'function' ? rCls(u.rank) : 'r-member');
+  }
+
+  const groupEl = document.getElementById('prof-group');
+  if (groupEl) groupEl.textContent = u.group || '미지정';
+
+  const studyEl = document.getElementById('prof-study');
+  if (studyEl) studyEl.innerHTML = studyBadges(u.studies);
+
+  const deptEl = document.getElementById('prof-dept');
+  if (deptEl) deptEl.textContent = `${u.dept || '학과 미지정'} · ${u.studentId || ''}`;
+
+  const emailEl = document.getElementById('prof-email');
+  if (emailEl) emailEl.textContent = u.email;
+
+  // 출석 통계 바인딩
+  const attStats = getProfileAttStats(u.id);
+  const attEl = document.getElementById('prof-att');
+  if (attEl) {
+    attEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.85rem;text-align:center;">
+        <div style="background:var(--gray-50);border-radius:var(--r-md);padding:.6rem;"><div style="font-size:20px;font-weight:700;color:var(--green);">${attStats.att}</div><div class="tm">출석</div></div>
+        <div style="background:var(--gray-50);border-radius:var(--r-md);padding:.6rem;"><div style="font-size:20px;font-weight:700;color:#f57c00;">${attStats.late}</div><div class="tm">지각</div></div>
+        <div style="background:var(--gray-50);border-radius:var(--r-md);padding:.6rem;"><div style="font-size:20px;font-weight:700;color:var(--blue);">${attStats.ex}</div><div class="tm">사유</div></div>
+        <div style="background:var(--gray-50);border-radius:var(--r-md);padding:.6rem;"><div style="font-size:20px;font-weight:700;color:var(--red);">${attStats.abs}</div><div class="tm">결석</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;"><span style="font-size:13px;font-weight:500;">출석률</span><span style="font-size:13px;font-weight:700;color:var(--blue);">${attStats.rate}%</span></div>
+      <div class="prog"><div class="pb pb-bl" style="width:${attStats.rate}%"></div></div>
+      <div class="tm" style="margin-top:4px;">전체 ${attStats.total}회 중 ${attStats.att}회 출석</div>
+    `;
+  }
+
+  // 과제 통계 바인딩
+  const asgStats = getProfileAsgStats(u.id, u.group);
+  const asgEl = document.getElementById('prof-asg');
+  if (asgEl) {
+    asgEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.85rem;text-align:center;">
+        <div style="background:var(--gray-50);border-radius:var(--r-md);padding:.6rem;"><div style="font-size:20px;font-weight:700;color:var(--green);">${asgStats.submitted}</div><div class="tm">제출 완료</div></div>
+        <div style="background:var(--gray-50);border-radius:var(--r-md);padding:.6rem;"><div style="font-size:20px;font-weight:700;color:var(--red);">${asgStats.total - asgStats.submitted}</div><div class="tm">미제출</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;"><span style="font-size:13px;font-weight:500;">제출률</span><span style="font-size:13px;font-weight:700;color:var(--green);">${asgStats.rate}%</span></div>
+      <div class="prog"><div class="pb pb-gr" style="width:${asgStats.rate}%"></div></div>
+      <div class="tm" style="margin-top:4px;">전체 ${asgStats.total}개 중 ${asgStats.submitted}개 제출</div>
+    `;
+  }
+};
+
+window.openEditProfileModal = function() {
+  const u = DB.currentUser;
+  const html = `<div class="modal fc" onclick="event.stopPropagation()">
+    <h3>내 정보 수정</h3>
+    <div class="fg"><label class="fl">이름</label><input type="text" id="ep-name" class="fc" value="${esc(u.name||'')}"></div>
+    <div class="fg"><label class="fl">학과</label><input type="text" id="ep-dept" class="fc" value="${esc(u.dept||'')}"></div>
+    <div class="fg"><label class="fl">아바타 글자</label><input type="text" id="ep-avatar" class="fc" maxlength="2" value="${esc(u.avatar||'')}"></div>
+    <div class="fg"><label class="fl">비밀번호</label><input type="password" id="ep-pw" class="fc" placeholder="변경할 비밀번호 입력"></div>
+    <div class="fr mt1">
+      <button class="btn btn-p" onclick="saveProfile()">저장</button>
+      <button class="btn btn-o" onclick="closeModal()">취소</button>
+    </div>
+  </div>`;
+  openModal(html);
+};
+
+window.saveProfile = async function() {
+  const nm = document.getElementById('ep-name')?.value.trim();
+  const dp = document.getElementById('ep-dept')?.value.trim();
+  const av = document.getElementById('ep-avatar')?.value.trim();
+  const pw = document.getElementById('ep-pw')?.value.trim();
+  const u = DB.currentUser;
+  
+  const updates = {};
+  if(nm) updates.name = nm;
+  if(dp) updates.dept = dp;
+  if(av) updates.avatar = av;
+  if(pw) updates.pw = pw;
+  
+  if(window.API && Object.keys(updates).length > 0) {
+    try { await window.API.updateUser(u.id, updates); } catch(e) { return toast('프로필 수정 오류', 'err'); }
+  } else {
+    Object.assign(u, updates);
+  }
+  
+  toast('프로필이 업데이트되었습니다.', 'ok');
+  closeModal();
+  renderProfile();
+  
+  const sName = document.getElementById('sidebar-name');
+  if(sName) sName.textContent = updates.name || u.name;
+  const sAv = document.getElementById('sidebar-avatar');
+  if(sAv) sAv.textContent = updates.avatar || (updates.name ? updates.name.substring(0,2) : (u.avatar || u.name.substring(0,2)));
+};
+
+window.renderAdminGroups = function() {
+  const gc = document.getElementById('admin-groups');
+  if(!gc) return;
+  gc.innerHTML = (DB?.groups||[]).map(g => `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem;border-bottom:1px solid var(--gray-200);">
+    <span>${esc(g)}</span>
+    <div>
+      <button class="btn btn-o" style="padding:.2rem .4rem;font-size:11px;" onclick="editGroup('${esc(g)}')">수정</button>
+      <button class="btn btn-o" style="padding:.2rem .4rem;font-size:11px;" onclick="deleteGroup('${esc(g)}')">삭제</button>
+    </div>
+  </div>`).join('');
+};
+
+window.addGroup = function() {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  const ng = document.getElementById('new-group-inp').value.trim();
+  if(!ng) return toast('그룹명을 입력하세요.', 'err');
+  if(DB.groups.includes(ng)) return toast('이미 존재하는 그룹입니다.', 'err');
+  DB.groups.push(ng);
+  document.getElementById('new-group-inp').value = '';
+  toast('조/그룹이 추가되었습니다.', 'ok');
+  renderAdminGroups();
+};
+
+window.editGroup = function(oldName) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  const newName = prompt('새로운 조/그룹 이름을 입력하세요:', oldName);
+  if(!newName || newName.trim() === '' || newName === oldName) return;
+  const n = newName.trim();
+  if(DB.groups.includes(n)) return toast('이미 존재하는 그룹명입니다.', 'err');
+  const idx = DB.groups.indexOf(oldName);
+  if(idx > -1) {
+    DB.groups[idx] = n;
+    (DB.users||[]).forEach(u => { if(u.group === oldName) u.group = n; });
+    toast('그룹명이 변경되었습니다.', 'ok');
+    renderAdminGroups();
+  }
+};
+
+window.deleteGroup = function(gName) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if(!confirm(`[${gName}] 조를 정말 삭제하시겠습니까? 소속된 학회원들은 '미지정'으로 변경됩니다.`)) return;
+  DB.groups = DB.groups.filter(g => g !== gName);
+  (DB.users||[]).forEach(u => { if(u.group === gName) u.group = '미지정'; });
+  toast('삭제 완료.', 'ok');
+  renderAdminGroups();
+};
+
+window.renderAdminStudies = function() {
+  const sc = document.getElementById('admin-studies');
+  if (!sc) return;
+  sc.innerHTML = (DB?.studies || []).map(s => `
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:.5rem; border-bottom:1px solid var(--gray-200);">
+      <span>${esc(s)}</span>
+      <div>
+        <button class="btn btn-o btn-sm" style="color:var(--red); border-color:var(--red); padding:.2rem .4rem; font-size:11px;" onclick="deleteStudy('${esc(s)}')">삭제</button>
+      </div>
+    </div>`).join('');
+};
+
+window.addStudy = function() {
+  if (!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  const inp = document.getElementById('new-study-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) return toast('스터디 이름을 입력해주세요.', 'err');
+  if (!DB.studies) DB.studies = [];
+  if (DB.studies.includes(val)) return toast('이미 존재하는 스터디입니다.', 'err');
+  DB.studies.push(val);
+  inp.value = '';
+  toast('새 스터디가 추가되었습니다.', 'ok');
+  renderAdminStudies();
+};
+
+window.deleteStudy = function(studyName) {
+  if (!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if (!confirm(`'${studyName}' 스터디를 삭제하시겠습니까?`)) return;
+  DB.studies = (DB.studies || []).filter(s => s !== studyName);
+  toast('스터디가 삭제되었습니다.', 'ok');
+  renderAdminStudies();
+};
+
+window.renderAdmin = function() {
+  const u = DB.currentUser;
+  if (!isAdmin(u)) return;
+
+  // 1. 승인 대기자 렌더링
+  const pd = document.getElementById('admin-pending');
+  if (pd) {
+    const pUsers = (DB.users || []).filter(x => x.status === 'pending');
+    if (!pUsers.length) {
+      pd.innerHTML = '<div class="empty" style="padding:1rem;">가입 대기 중인 인원이 없습니다.</div>';
+    } else {
+      pd.innerHTML = pUsers.map(user => `
+        <div class="card" style="margin-bottom:.5rem; padding:.75rem;">
+          <div style="font-weight:600;">${esc(user.name)} (${esc(user.dept)} ${esc(user.studentId)})</div>
+          <div class="tm" style="font-size:12px;">${esc(user.email)}</div>
+          <div class="fr mt1" style="gap:5px;">
+            <button class="btn btn-p btn-sm" onclick="approveMember('${user.id}')">가입 승인</button>
+            <button class="btn btn-o btn-sm" onclick="rejectMember('${user.id}')">거절</button>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // 2. 직급 현황 렌더링
+  const ar = document.getElementById('admin-ranks');
+  if (ar) {
+    const active = (DB.users || []).filter(x => x.status === 'active');
+    ar.innerHTML = active.map(m => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:.45rem 0; border-bottom:1px solid var(--gray-100);">
+        <span style="font-size:13px;">${esc(m.name)}</span>
+        <span class="rank ${typeof rCls === 'function' ? rCls(m.rank) : 'r-member'}">${esc(m.rank)}</span>
+      </div>`).join('');
+  }
+
+  // 3. 미제출자 명단 렌더링
+  const ans = document.getElementById('admin-ns');
+  if (ans) {
+    const now = new Date();
+    const activeAsg = (DB.assignments || []).filter(a => new Date(a.deadline).setHours(23,59,59,999) >= now);
+    if (!activeAsg.length) {
+      ans.innerHTML = '<div class="empty" style="padding:1rem;">진행 중인 과제가 없습니다.</div>';
+    } else {
+      ans.innerHTML = activeAsg.map(a => {
+        const elig = (DB.users || []).filter(m => m.status === 'active' && (a.group === '전체' || m.group === a.group));
+        const ns = elig.filter(m => !(a.submissions || []).find(s => String(s.userId) === String(m.id)));
+        return `
+          <div style="padding:.65rem 0; border-bottom:1px solid var(--gray-100);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+              <div style="font-size:13px; font-weight:600;">${esc(a.title)}</div>
+              <span class="badge ${ns.length === 0 ? 'b-gr' : 'b-re'}">${ns.length === 0 ? '모두 제출' : ns.length + '명 미제출'}</span>
+            </div>
+            ${ns.length > 0 ? `<div style="display:flex; flex-wrap:wrap; gap:3px; margin-top:4px;">${ns.map(m => `<span class="badge b-re" style="font-size:11px;">${esc(m.name)}</span>`).join('')}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+  }
+
+  // 4. 프로젝트 조 및 스터디 목록 렌더링
+  renderAdminGroups();
+  renderAdminStudies();
+};
+
+window.approveMember = async function(id) {
+  if(!isAdmin(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if(window.API) {
+    try { await window.API.updateUser(id, { status: 'active' }); } catch(e) { return toast('승인 오류', 'err'); }
+  } else {
+    const u = (DB.users||[]).find(x => String(x.id) === String(id));
+    if(u) u.status = 'active';
+  }
+  toast('가입이 승인되었습니다.', 'ok');
+  renderAdmin();
+};
+
+window.rejectMember = async function(id) {
+  if(!isAdmin(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if(window.API && window.supabaseClient) {
+    try { await window.supabaseClient.from('users').delete().eq('id', id); } catch(e) { return toast('삭제 오류', 'err'); }
+  } else {
+    DB.users = (DB.users||[]).filter(x => String(x.id) !== String(id));
+  }
+  toast('거절/삭제되었습니다.', 'ok');
+  renderAdmin();
+};
+
+// --- Logs ---
+window.renderLogs = function() {
+  const el = document.getElementById('log-content');
+  if(!(DB?.teamLogs||[]).length) {
+    el.innerHTML = '<div class="empty">작성된 팀 로그가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = (DB.teamLogs.slice().reverse()).map(lg => {
+    return `<div class="card asg-item" style="margin-bottom:1rem; cursor:pointer;" onclick="openLogModal('${lg.id}')">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
+        <div>
+          <span class="badge ${LC_CLS[lg.cat]||'b-gy'}">${esc(lg.cat)}</span>
+          <strong style="margin-left:5px;">${esc(lg.title)}</strong>
+        </div>
+        <div class="tm" style="font-size:12px;">${fmt(lg.date)}</div>
+      </div>
+      <div style="font-size:13px; color:var(--gray-600); margin-bottom:.5rem; max-height:40px; overflow:hidden;">${esc(lg.content)}</div>
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--gray-500);">
+        <span>대상: ${esc(lg.group)}</span>
+        <span>작성자: ${esc(lg.author)}</span>
+      </div>
+      ${canMng(DB.currentUser) || lg.author === DB.currentUser.name ? `<button class="btn btn-o" style="padding:.2rem .4rem; font-size:11px; float:right; margin-top:-20px;" onclick="event.stopPropagation(); delLog('${lg.id}')">삭제</button>` : ''}
+    </div>`;
+  }).join('');
+};
+
+window.openLogModal = function(id) {
+  const lg = (DB?.teamLogs||[]).find(x => String(x.id) === String(id));
+  let isNew = !lg;
+  let html = '';
+  if (isNew) {
+    html = `<div class="modal fc" onclick="event.stopPropagation()">
+      <h3>새 팀 로그 작성</h3>
+      <div class="fg"><label class="fl">분류</label><select id="nl-cat" class="fc">
+        ${LOG_CATS.map(c=>`<option>${esc(c)}</option>`).join('')}
+      </select></div>
+      <div class="fg"><label class="fl">대상 그룹 (관련 조/스터디)</label><select id="nl-group" class="fc">
+        <option>전체</option>
+        ${(DB?.groups||[]).map(g=>`<option>${esc(g)}</option>`).join('')}
+        <optgroup label="스터디">
+          ${(DB?.studies||[]).map(s=>`<option>${esc(s)}</option>`).join('')}
+        </optgroup>
+      </select></div>
+      <div class="fg"><label class="fl">제목</label><input type="text" id="nl-title" class="fc"></div>
+      <div class="fg"><label class="fl">내용</label><textarea id="nl-content" class="fc" rows="5"></textarea></div>
+      <div class="fr mt1"><button class="btn btn-p" onclick="saveLog()">저장</button><button class="btn btn-o" onclick="closeModal()">취소</button></div>
+    </div>`;
+  } else {
+    html = `<div class="modal fc" onclick="event.stopPropagation()">
+      <h3>${esc(lg.title)}</h3>
+      <div style="margin-bottom:1rem;">
+        <span class="badge ${LC_CLS[lg.cat]||'b-gy'}">${esc(lg.cat)}</span> 
+        <span class="tm" style="font-size:12px; margin-left:10px;">${fmt(lg.date)} | 작성자: ${esc(lg.author)} | 대상: ${esc(lg.group)}</span>
+      </div>
+      <div style="background:var(--gray-50); padding:1rem; border-radius:8px; white-space:pre-wrap; font-size:14px; line-height:1.6;">${esc(lg.content)}</div>
+      <button class="btn btn-o mt1" style="width:100%;" onclick="closeModal()">닫기</button>
+    </div>`;
+  }
+  openModal(html);
+};
+
+window.saveLog = async function() {
+  const t = document.getElementById('nl-title').value.trim();
+  const c = document.getElementById('nl-content').value.trim();
+  const cat = document.getElementById('nl-cat').value;
+  const g = document.getElementById('nl-group').value;
+  if(!t || !c) return toast('제목과 내용을 입력하세요.', 'err');
+  
+  const logData = { title: t, content: c, cat, group: g, author: DB.currentUser.name, date: new Date().toISOString().split('T')[0] };
+  
+  if (window.API) {
+    try { await window.API.addTeamLog(logData); } catch(e) { return toast('저장 오류', 'err'); }
+  } else {
+    DB.teamLogs.push({ id: Date.now(), ...logData });
+  }
+  toast('팀 로그가 저장되었습니다.', 'ok');
+  closeModal();
+  renderLogs();
+};
+
+window.delLog = async function(id) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if(!confirm('이 로그를 삭제하시겠습니까?')) return;
+  
+  if(window.API && window.supabaseClient) {
+    try { await window.supabaseClient.from('team_logs').delete().eq('id', id); } catch(e) { return toast('삭제 오류', 'err'); }
+  } else {
+    DB.teamLogs = (DB.teamLogs||[]).filter(x => String(x.id) !== String(id));
+  }
+  toast('로그가 삭제되었습니다.', 'ok');
+  renderLogs();
+};
+
+window.exportLogCSV = function() {
+  const h = ['분류', '제목', '내용', '대상그룹', '작성자', '작성일'];
+  const rows = (DB?.teamLogs||[]).map(l => [l.cat, l.title, l.content, l.group, l.author, l.date]);
+  dlCSV(h, rows, 'teamlogs.csv');
+};
+
+// --- Notifications ---
+window.renderNotify = function() {
+  const el = document.getElementById('notify-log');
+  if(!(DB?.notifications||[]).length) { el.innerHTML = '<div class="empty">발송 내역이 없습니다.</div>'; return; }
+  el.innerHTML = DB.notifications.slice().reverse().slice(0, 20).map(n => 
+    `<div style="padding:.5rem;border-bottom:1px solid var(--gray-200);">
+       <div style="font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+         <span>[${esc(n.type)}] ${esc(n.title)}</span>
+         <button class="btn btn-o" style="padding:2px 6px; font-size:10px;" onclick="deleteNotification('${n.id}')">삭제</button>
+       </div>
+       <div style="font-size:12px;color:var(--gray-600);">${esc(n.message)}</div>
+       <div style="font-size:10px;color:var(--gray-500);text-align:right;">${esc(n.sentAt)} (${esc(n.senderName)})</div>
+     </div>`
+  ).join('');
+};
+
+window.openMyNotiModal = function() {
+  const u = DB.currentUser; if (!u) return;
+  const myNotis = (DB.notifications || []).filter(n => String(n.userId) === String(u.id)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const html = `
+    <div class="modal fc" style="max-width: 450px;" onclick="event.stopPropagation()">
+        <h3>내 알림</h3>
+        <div class="log-list mt1" style="max-height: 60vh; overflow-y: auto;">
+          ${myNotis.length > 0 ? myNotis.map(n => `
+            <div style="padding: 1rem; border-bottom: 1px solid var(--gray-200); background: ${n.read ? 'transparent' : 'rgba(251, 191, 36, 0.1)'};">
+              <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${esc(n.title)}</div>
+              <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 6px;">${esc(n.message)}</div>
+              <div style="font-size: 11px; color: var(--gray-500);">${new Date(n.createdAt).toLocaleString()}</div>
+            </div>
+          `).join('') : '<div class="tm" style="text-align: center; padding: 2rem;">도착한 알림이 없습니다.</div>'}
+        </div>
+        <button class="btn btn-o mt1" style="width: 100%;" onclick="closeModal()">닫기</button>
+      </div>`;
+  openModal(html);
+  myNotis.forEach(n => n.read = true);
+  updateNotifyBadge();
+};
+
+window.sendNSNotify = async function() {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  
+  const users = (DB.users||[]).filter(x => x.status === 'active');
+  const payload = users.map(u => ({
+    user_id: u.id, type: '미제출 촉구', title: '과제 제출 확인 요청', 
+    message: '아직 제출하지 않은 과제가 있습니다. 기한 내 제출바랍니다.', 
+    sender_name: DB.currentUser.name
+  }));
+  
+  if(window.API && window.supabaseClient) {
+    try { await window.supabaseClient.from('notifications').insert(payload); } catch(e) { return toast('발송 오류', 'err'); }
+  } else {
+    payload.forEach(p => DB.notifications.push({...p, id: Date.now()+Math.random(), userId: p.user_id, sentAt: new Date().toLocaleString(), read: false}));
+  }
+  
+  toast('미제출자 시스템 알림이 일괄 발송되었습니다.', 'ok');
+  updateNotifyBadge(); renderNotify();
+};
+
+window.sendAbNotify = async function() {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  
+  const users = (DB.users||[]).filter(x => x.status === 'active');
+  const payload = users.map(u => ({
+    user_id: u.id, type: '결석자 경고', title: '출석 상태 확인 요청', 
+    message: '오늘 세션에 결석 처리되었습니다. 사유서 제출바랍니다.', 
+    sender_name: DB.currentUser.name
+  }));
+  
+  if(window.API && window.supabaseClient) {
+    try { await window.supabaseClient.from('notifications').insert(payload); } catch(e) { return toast('발송 오류', 'err'); }
+  } else {
+    payload.forEach(p => DB.notifications.push({...p, id: Date.now()+Math.random(), userId: p.user_id, sentAt: new Date().toLocaleString(), read: false}));
+  }
+  
+  toast('결석자 시스템 알림이 일괄 발송되었습니다.', 'ok');
+  updateNotifyBadge(); renderNotify();
+};
+
+window.sendCustom = async function() {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  const msg = document.getElementById('notify-msg').value.trim();
+  const tgt = document.getElementById('notify-target').value;
+  if(!msg) return toast('메시지를 입력하세요.', 'err');
+  document.getElementById('notify-msg').value = '';
+  
+  let users = (DB.users||[]).filter(x => x.status === 'active');
+  if(tgt !== 'all') {
+    users = users.filter(x => x.group === tgt || (x.studies||[]).includes(tgt));
+  }
+  
+  const payload = users.map(u => ({
+    user_id: u.id, type: '일반 공지', title: '관리자 공지', 
+    message: msg, sender_name: DB.currentUser.name
+  }));
+  
+  if(window.API && window.supabaseClient) {
+    try { await window.supabaseClient.from('notifications').insert(payload); } catch(e) { return toast('발송 오류', 'err'); }
+  } else {
+    payload.forEach(p => DB.notifications.push({...p, id: Date.now()+Math.random(), userId: p.user_id, sentAt: new Date().toLocaleString(), read: false}));
+  }
+  
+  toast(`${tgt === 'all' ? '전체' : tgt} 학회원에게 알림이 발송되었습니다.`, 'ok');
+  updateNotifyBadge(); renderNotify();
+};
+
+window.clearAllNotifications = window.clearNotify = async function() {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if (!confirm('전체 알림 발송 내역을 모두 삭제하시겠습니까? (복구 불가)')) return;
+
+  try {
+    if(window.API && window.supabaseClient) {
+      const { error } = await window.supabaseClient
+        .from('notifications')
+        .delete()
+        .neq('id', 0); // 모든 행 삭제
+
+      if (error) throw error;
+    }
+
+    DB.notifications = [];
+    toast('모든 알림 내역이 삭제되었습니다.', 'ok');
+
+    if (window.API && typeof window.API.fetchInitialData === 'function') await window.API.fetchInitialData();
+    if (typeof updateNotifyBadge === 'function') updateNotifyBadge();
+    if (typeof renderNotify === 'function') renderNotify();
+  } catch (err) {
+    console.error('clearAllNotifications error:', err);
+    toast('알림 일괄 삭제 실패: ' + err.message, 'err');
+  }
+};
+
+window.deleteNotification = async function(notiId) {
+  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
+  if (!confirm('이 알림 내역을 삭제하시겠습니까?')) return;
+
+  try {
+    if(window.API && window.supabaseClient) {
+      const { error } = await window.supabaseClient
+        .from('notifications')
+        .delete()
+        .eq('id', notiId);
+
+      if (error) throw error;
+    }
+
+    if (Array.isArray(DB.notifications)) {
+      DB.notifications = DB.notifications.filter(n => String(n.id) !== String(notiId));
+    }
+    toast('알림이 삭제되었습니다.', 'ok');
+
+    if (window.API && typeof window.API.fetchInitialData === 'function') await window.API.fetchInitialData();
+    if (typeof updateNotifyBadge === 'function') updateNotifyBadge();
+    if (typeof renderNotify === 'function') renderNotify();
+  } catch (err) {
+    console.error('deleteNotification error:', err);
+    toast('알림 삭제 실패: ' + err.message, 'err');
+  }
+};
+
+window.updateNotifyBadge = function() {
+  const u = DB.currentUser;
+  const b = document.getElementById('nav-notify-badge');
+  const tb = document.getElementById('top-noti-badge');
+  if (!u) return;
+  
+  if (b) b.textContent = (DB?.notifications||[]).length > 0 ? (DB?.notifications||[]).length : '';
+  
+  if (tb) {
+    const unread = (DB.notifications || []).filter(n => String(n.userId) === String(u.id) && !n.read).length;
+    if (unread > 0) {
+      tb.style.display = 'inline-block';
+      tb.textContent = unread;
+    } else {
+      tb.style.display = 'none';
+    }
+  }
+};
+
+// --- Files (Dummy UI only) ---
+window.renderFiles = function() {
+  document.getElementById('file-content').innerHTML = '<div class="empty">파일 스토리지 기능은 이 데모에서 비활성화되어 있습니다.</div>';
+};
+window.openStorageConfigModal = function() {};
+window.saveStorageConfig = function() {};
+window.openUploadModal = function() {};
+window.validatePDF = function() {};
+window.doUpload = function() {};
+window.downloadFile = function() {};
+window.delFile = function() {};
+window.exportFileCSV = function() {};
+
+// ─── CALENDAR FUNCTIONS ───────────────────────────────────
+window.calMove = function(dir) {
+  DB.calM += dir;
+  if (DB.calM > 11) { DB.calM = 0; DB.calY++; }
+  if (DB.calM < 0) { DB.calM = 11; DB.calY--; }
+  renderCalendar();
+};
+
+window.renderCalendar = function() {
+  const u = DB.currentUser;
+  const canEdit = canMng(u);
+  
+  const hint = document.getElementById('cal-hint');
+  if (hint) hint.style.display = canEdit ? 'inline-block' : 'none';
+
+  const y = DB.calY, m = DB.calM;
+  const calTitle = document.getElementById('cal-title');
+  if (calTitle) calTitle.textContent = `${y}년 ${m + 1}월`;
+
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const calHd = document.getElementById('cal-hd');
+  if (calHd) {
+    calHd.innerHTML = days.map((d, i) => `<div class="cal-dh ${i === 0 ? 'cal-sun' : i === 6 ? 'cal-sat' : ''}">${d}</div>`).join('');
+  }
+
+  const first = new Date(y, m, 1).getDay();
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  const today = new Date().toISOString().split('T')[0];
+  let total = first + lastDay;
+  if (total % 7) total += 7 - (total % 7);
+
+  let cells = '';
+  for (let i = 0; i < total; i++) {
+    let day, isOther = false, dStr;
+    if (i < first) {
+      day = new Date(y, m, 0).getDate() - first + i + 1;
+      isOther = true;
+      const pm = m === 0 ? 12 : m;
+      const py = m === 0 ? y - 1 : y;
+      dStr = `${py}-${String(pm).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    } else if (i >= first + lastDay) {
+      day = i - first - lastDay + 1;
+      isOther = true;
+      const nm = m === 11 ? 1 : m + 2;
+      const ny = m === 11 ? y + 1 : y;
+      dStr = `${ny}-${String(nm).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    } else {
+      day = i - first + 1;
+      dStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    const isToday = dStr === today;
+    const dow = i % 7;
+    const evs = (DB?.calEvents || []).filter(e => e.date === dStr);
+    const cls = ['cal-d', isOther ? 'other' : '', isToday ? 'today' : '', dow === 0 ? 'cal-sun' : dow === 6 ? 'cal-sat' : '', canEdit && !isOther ? 'editable' : ''].filter(Boolean).join(' ');
+    const click = canEdit && !isOther ? `onclick="openCalModal('${dStr}')"` : '';
+
+    cells += `<div class="${cls}" ${click}>
+      <div class="cal-dn">${day}</div>
+      ${evs.map(e => `<div class="cal-ev ce-${e.type}" title="${esc(e.title)}">${esc(e.title)}</div>`).join('')}
+    </div>`;
+  }
+
+  const calBody = document.getElementById('cal-body');
+  if (calBody) calBody.innerHTML = cells;
+};
+
+window.openCalModal = function(dateStr) {
+  const evs = (DB?.calEvents || []).filter(e => e.date === dateStr);
+  openModal(`<div class="modal" onclick="event.stopPropagation()">
+    <div class="m-hd"><div class="m-title" style="display:flex;align-items:center;gap:6px;"><i data-lucide="calendar" style="width:16px;height:16px;"></i> ${fmt(dateStr)} 일정 관리</div><button class="m-x" onclick="closeModal()">✕</button></div>
+    <div class="m-bd">
+      ${evs.length > 0 ? `<div style="margin-bottom:.85rem;"><div class="fl" style="margin-bottom:.4rem;">등록된 일정</div>
+      ${evs.map(e => `<div style="display:flex;align-items:center;justify-content:space-between;padding:.38rem .6rem;background:var(--gray-50);border-radius:var(--r-sm);margin-bottom:3px;">
+        <span style="font-size:13px;">${esc(e.title)}</span>
+        <button class="btn btn-d btn-sm" onclick="delCalEv('${e.id}','${dateStr}')">삭제</button>
+      </div>`).join('')}</div><div class="dv"></div>` : ''}
+      <div class="fg"><label class="fl">일정 추가</label><input id="cal-new-title" class="fc" placeholder="일정 제목"></div>
+      <div class="fg"><label class="fl">색상</label>
+        <select id="cal-new-type" class="fc">
+          <option value="bl">파란색 (정기모임)</option>
+          <option value="ye">노란색 (스터디)</option>
+          <option value="re">빨간색 (기타)</option>
+          <option value="gr">초록색 (행사/성과발표)</option>
+        </select>
+      </div>
+    </div>
+    <div class="m-ft"><button class="btn btn-o" onclick="closeModal()">닫기</button><button class="btn btn-p" onclick="addCalEv('${dateStr}')">추가</button></div>
+  </div>`);
+};
+
+window.addCalEv = async function(dateStr) {
+  const title = document.getElementById('cal-new-title').value.trim();
+  const type = document.getElementById('cal-new-type').value;
+  if (!title) return toast('일정 제목을 입력해주세요.', 'err');
+  
+  const evData = { date: dateStr, title, type };
+  if(window.API) {
+    try { await window.API.addCalEvent(evData); } catch(e) { return toast('추가 오류', 'err'); }
+  } else {
+    if (!DB.calEvents) DB.calEvents = [];
+    DB.calEvents.push({ id: Date.now(), ...evData });
+  }
+  closeModal();
+  renderCalendar();
+  toast('일정이 추가되었습니다.', 'ok');
+};
+
+window.delCalEv = async function(id, dateStr) {
+  if(window.API) {
+    try { await window.API.deleteCalEvent(id); } catch(e) { return toast('삭제 오류', 'err'); }
+  } else {
+    DB.calEvents = (DB?.calEvents || []).filter(e => String(e.id) !== String(id));
+  }
+  closeModal();
+  openCalModal(dateStr);
+  renderCalendar();
+};
+
+
+</script>
 </body>
 </html>
