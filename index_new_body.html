@@ -1,0 +1,316 @@
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="logo-box" style="background:transparent;padding:0;overflow:hidden;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABG4AAARuCAMAAAC1E4FYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADDUExURf////3z2fztxvngmffRZ/rflPvrv/zx0v778vbLVPTBNPbJTvvns/735vndjfbNWvnbh/vpuf757PfPYfrjpvjXevTDOvfTbf/9+fXHR/XFQfnZgfnhn/zvzP313/rlrPjVdPHz+MjR47O/2JGixnaMuVp1qzhXmSNGjtbc6qWz0VNvp8/W5ipMkmF6rkZjoOPo8YSXwPj5+2iAsp6uzW+Gtay51Oru9H2SvDFSlT9dnLrF24udw8HL35eoykxpo9zi7SZJgO8AAAAJcEhZcwAADsMAAA7DAcdvqGQAABmISURBVHhe7d3pdtTGFgZQphDmBJIQhlyCZwM2Nm3wwPz+T3WXsU3MwZa71VUllbT371BSZJ1vqWu8dAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADoqctXrl69eu3EL1evXv81/icA87lx/eq1m7fOcvvaL3fuxv8coI0b1+/9FkMmuP37/QfxnwHM5MadP2K2nOPmnxIHaO36Xw9jqjT5+/6j2ALAxR7cexzz5EJPftePA8zowb2ZPmz+81TgADO4+7Rl2Bz663JsDuBsN+7FBJnRX3qNgWncmb3PJnryT2wUILo87ch3s5v/iw0DnPbol5gbrT29ERsH+O7ZRfOHZ3HbiirgPHeexMiYy0M9OMCZHj2NeTG3v/2gAn529+wl3/N5bA4OED27HaMiiSdGqIAfXU7bbfOfh9fjpYBRu5IrbW7dunUnXgwYsetzLJG62NV4OWC0rmRNm1u3/o0XBEbqcua0uXXrfrwkMErPMvbbHHt4JV4UGKG7eUbAf/TE/BvgUY7ZfT97bAscGL30KxfOdi1eGBiZOzEWsjEcDuP2LPug1H8sZ4AxK9Rxc0T3DYzZ7zESsvo7Xh4YjcsxEDIz2w9GK+VWodN47FBfGKl/Yxxkdy/eAjAKD+Y/T2pmJhfDKJXtJz7yW7wJYARK9xMfsbcfjNDzmARF+LyB8XlQcD7xaT5vYHTuxRwoxFJNGJuuPm4MTsHodPVxc+vW83grwKA9yr9h6Lms1IRRuR8zoKB/4s0AQ9bNKPgRY+EwJt11FB/SWQwj8mdMgKIs1IQRKb3zxI8ex9sBButuDIDC7FoMo1Hu+IWzOZQBRqPU2VLnsZABRqPEMb1NHtpEFEai664bnTcwGl133ei8gdHoYtfQHzlxCkbiWqz+4sy8gZHo4ASG6Ea8J2CIbsTa78Cv8aaAIfo11n4H7sSbAoaoy71uTvwSbwoYol9i7XfADqIwCl0vYThkGQOMQh/i5ma8KWCIup92c+vW7XhTwBCJG6CQm7H2uxBvChiirref+CbeFDBEPVjDIG5gHHzdAIWIG6CQPoxM2YECRqEPcWMgHEbhr1j7HRA3MAp9WMRgzRSMwr1Y+x2wWTGMwr+x9jtwL94UMET/i7XfgT/jTQFD9CDWfgeuxJsCBulJLP7yHsR7Agbpt1j8xT2JtwQMU/cTb/6ItwQM05+x+oszMAUjcTlWf3HX4y0BA9V5X7Eze2EsnsfyL+y3eEPAUHXdeaPrBkaj684bXTcwHt1uV/xQ1w2MR7fHhP8VbwcYrmcxAYqyYArGpMt1DI8fxbsBBqzLsSnjUjAqDx7GECjncrwZYNC6m+lnjh+MTHdTb0y6gbHp6vPmZrwRYOi6+ryxSzGMzx8xCIowCg4jdD0mQRE+bmCMujgr3McNjNLlDube3I83AYxC+dN7ndULI/Wo9D4UD+/GWwBG4n7Mg8yuxhsARqNsb/FN/cQwXndLnsnw8Nd4eWBESk6+MeUGxq3c6NTzeGlgXB6VWstw237oMHaFum903ACXrhSZXHwnXhYYoRKzb/6JFwVG6d8YDsn9Hi8JjNTVGA+JGZQCTjyNAZHU32YTA9/lPMX3ubQBTsl3zp1+G+BHdzKNhxuTAqI882/MtwF+9uxmzIq5PTaXGDjLo9QDVH9bJwWc437KBVQP7TgBnO9ZugXiN/2QAhr9k+YD5+EvZtsAF3jwPEZHC9eexWYBfnbldkyPGT02/A1M59Gf8wTO46sGpIDp3Wk7Cef2nzptgNlc/y0myRRu+hkFtPDs3myn+j753dg30NaVp1OvpHp+368oYB43rt+7+FfVzd/vP4j/EGB2N67fO/808d+e3rkb/wHAHO7+7+rv166d+m117drTq1dM5wMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoG8WFhcXF5eWl5eXV1ZntrYOPRTfcjr0YvHlYbi8in8kGIb4xtOFjaXl1dXN+LeBgYkvPmVtLC2/3op/FBim+PpTzPbSGz+bGJVYA5QwWVze0Z3L6MRCILuNZR81jFOsBbJ68fa1HmFGK9YD2UyW3vkBxajFmiCPhd0dnzWMXSwLMth7+To+dxihWBmktvBSzzB8E4uDtJbexScOoxXLg4Q29g/i84YRixVCKgtv38eHDeMWi4Q0tt/4sIEglgkpbOixgZ/FQmF+S4ai4CyxVJiTLhs4T6wW5qLLBs4X64U56LKBJrFiaE2XDTSLNUNLG8IGLhCrhla2d+KDBaJYN7Sw8MbmEnCxWDnMbPLWaBRMI9YOs/pgng1MJxYPs9lYjU8UOEcsH2axbaINTC8WENNb+KiHGGYQS4ip7eohhpnEGmJKe3Y7hxnFKmI6Pm1gZrGMmMaCScQwu1hITOGT0zChhVhJXGhhJT5EYBqxlriITxtoKRYTzSb78QkCU4rlRKONrfgAgWnFeqLB5GN8fMD0YkVxvhc+bWAesaQ41wcz+2AusaY4z+f46IDZxKLibBNbTcC8Yllxpr0v8cEBs4p1xVk2TO2D+cXC4gxLttGCBGJl8bM38aEBbcTSIrLZBCQSi4tg29w+SCRWFz9aNLcPUonlxQ9exucFtBbri9OW4+MC2osFxinSBlKKFcZ/pA0kFUuM72xJDGnFGuOEtIHEYpFxTNpAarHKOCJtILlYZnwjbSC9WGcckjaQQSw0Ll2aWJQJOcRS49LkdXxIQAqx1pA2kEksNqQNZBKLbfT6dAb45uq75aVF/dYMRay2sXsbH1AnjnJmcnRLlm4xFLHcRu5DfD7lrX78dJwzx8QNQ/HDiz16Lzo+cmF1eTHekrhhOOK7PWrb7+PjKWfz9eczouaQuGEo4rs9ZpPOjspc2z8nag6liZuDZehafLfHrKMh8IOVhqxJFjfvY7NAdzo5ve5g5UO8j0jcwNB0cOjCFFkjbmB4PsX6zO7LbryHs4kbGJYXpY+v22nusDlF3MCg7JUdAt/c3453cD5xA0MyeRWrM6e1zwvxBpqIGxiSkqsgp+2y+U7cwIAUXCm19Sle/ELiBoZjby3WZi5rL+O1pyBuYDhWY2lmsrk8U5/NCXEDg1Fqi5uVvXjl6YgbGIqvZTadWH0RLzwtcQMDMdmKhZlDix7i78QNDESJhZmbn+NVZyFuYBgWY1lmsLURrzoTcQODUGIM/OOPWw/PTNzAIOQ/nnfOTxtxAwOxG4syuZU5P23EDQxD9jHwtTkGpL4TN1C/7OvAV1rNIo7EDdQvTR2fa7PNAqkzpLlNcQMd2s77U+pg7j7iY+IGqpd3VOrLDPv1NRM3ULu8E/x25h+ROiFuoHZZj8xMeVyguIHK5dx2YnOa46OmJm6gbgsZVy+8b73XxJnEDdQt40Lw1SSzbf4jbqBqL/INgr9O10l8RNxA1fINgidPG3EDVct30kv6tBE3ULN8G4ZmSBtxAzXLNgieI23EDVRs7yDWYiIJNrc5g7iBeu3HUkxkJV4oDXED1XoRKzGRTGkjbqBemQbBd+J1UhE3UKtMHzevsvTbHBI3UKs8HzfvWx4APgVxA5XK83Fz8DVeJx1xA5XK8nGzmeLEhfOIG6hTno+bRJugn03cQJ2yfNx8jFdJStxAlbJ83GQbAj8ibqBKK7EKE8g3BH5E3ECN9jLsqrWWbwj8iLiBGn2ORZhA0m3QzyJuoEKTDPuh51op9R9xAxVaijU4v/eZO27EDdQpw0l2qQ4CbyBuoD4ZRsFTnpZ5HnED9XkXS3Bur+IlchA3UJ30o+Cb2/EaOYgbqE76DdF34yWyEDdQneQdxZkXL5wQN1CbjViA89rMPZ34mLiB2iQ/f+FtvEIm4gYqM0l9uNRW/gl+R8QNVCb5jOLsa6VOiBuozOtYf3N6HS+QjbiBuuzF8pvT5ot4hWzEDdTlZSy/Ob2JF8hH3EBdVmP5zSf7nlqniBuoykKsvjmVGgQ/JG6gKrux+ubzJbafk7iBqiQel8p5it1PxA3UZJJ2MXjRjxtxA1VJPMev2Ay/b8QN1CTtxlqFK1fcQEUS/5YqOSwlbqAui7H25rJWam3mMXEDFUlTsCdKbId+Wpq7FzdQRNJ9/ErtqvWduIF6pJ1SXHC11BFxA/VIO6W4yOkLp4kbqMdKLL15FNoP/RRxA/VYi6U3j3L73JwQN1CNpGf1bsXW8xM3UI2kx9mVHgUXN1CTpCsYincUixuoyPtYeXN4FRsvQNxALZJuiv4ytl6AuIFafIiFN4/SM4oPiRuoxcdYeHMod7jUKeIGapHyDIbd2HgJ4gZqkfBs8M3CW08cETdQiZST/N7FxosQN1CJlMdnlt2j+ESauFlbHKbyi0rgXG9i3bXXzW+pRHEzVKvxcUF3Ep4w1dGbLW6adPRHgbMkXA7ewXqpQ+KmibihP1Lu5LcYGy9D3DQRN/THRnw92+uo60bcNBI39EfCgamuXmxx06Srvwr8bD++nu111HUjbhqJG/rjVXw92+uo60bcNBI39Ee6gamuum7ETSNxQ29M4tvZ3pfYdinipom4oTe+xrezveLH2Z0QN03EDb3xKb6d7XWzYErcXEDc0BsJx8EXYtuliJsm4obeSLeV30Fsuhhx00Tc0BvpDn3p4gyGI+KmibihN9JNu+lma61D4qaJuKE30k276WpOsbhpJm7ojfhytrcUmy5G3DQRN/RFwiPtutukUtw0ETf0xXZ8OdvrbBxc3DQSN/TFYnw5W1uLTZcjbpqIG/oi3aTi7sbBxU0jcUNf7MaXs7X92HQ54qaJuKEvPseXs7XPselyxE0TcUNfpKvUzhZopvyfGCJxQ1+sxJezta628hM3FxA39EW6JVPipqfEDX2xGl/O1rZj0+WImybihr4QN4MnbuiLdHGzF5suR9w0ETf0Rbq4iS0XJG6aiBv64kt8OVuLLRckbpqIG/rifXw52+pwyZS4aSRu6ItkcfM+tlyQuGkibuiLZHGzFVsuSNw0ETf0RbK46fKlFjdNuvzLwGniZvC6/MvAaeJm8Lr8y8Bp4mbwuvzLwGnJ4qbDzfzETSNxQ18kixsD4X0lbugLcTN44oa+SLaI4SC2XJC4aSJu6AtLNAdP3NAX4mbwxA19kS5ubK/VU+KGvtiJL2dr4qanxA19ke4khhex6XLETRNxQ198jC9na05i6ClxQ1+kO0VT3PSUuKEv0p0RvhubLkfcNBE39MWH+HK29jE2XY64aSJu6IvF+HK2thObLkfcNBE39MXX+HK29iU2XY64aSJu6Ivt+HK2thmbLkfcNBE39EZ8Odvr7hhNcdNE3NAbyXag6HAkXNw0ETf0RrpFUy9j08WImybiht5It4rhTWy6GHHTRNzQG+lKtbuR8HT/D0MkbuiNdNOKuztHU9w0ETf0Rrp5ft2NhIubJuKG3kg3z2/9a2y7FHHTRNzQG5P4drbX2SJNcdNE3NAfa/H1bG0lNl2KuGkibuiP1/H1bK2zo6bETRNxQ3+k28+vs+2KxU0TcUN/LMXXs72uOm/ETRNxQ3+8iK9ne1113oibJuKG/kg4NNVV5424aSJu6JGt+H6211HnTZq4WVscpg5P5IEo3cl260ux7TLSxE1X32YwIgmHpjpaFC5uoBLpDmPoar9icQOV2It1N4duNhAVN1CLdPuHrr+NbRchbqAW72Lhtfcqtl2EuIFavI2FN4dOhsLFDdQi4bzi9eXYeAniBqqxGSuvvU52EBU3UI10h7+sr3cxh1XcQDUSTvRb/xgbL0DcQDUSTvRbX4uNFyBuoBqThJ03XZzdK26gHik7b/Zj4/mJG6hHmno9cjCJrWeX5vbFDZSwEUtvHh9i69mJG6jIQay9OZRfFi5uoCIJt9jq4PNG3EBFXsbam8dObD03cQMV2Y61N5fSM4vFDdQk4f7o5T9vxA3UJE3FHtssvKlfmpsXN1DG11h8cym8Rbq4gaok/TW1uRCbz0rcQFVSrgovvWexuIGqJJ1YvL5WdCWDuIG6JDyPofTnjbiBuqT9NXVQcnBK3EBd0v6aKroPhbiByiQdmyo6tVjcQGU+x/qbT8ET7sQNVGYv5Rai6+vrS/EC2YgbqE3SXShKDoaLG6hNygMZDhU7UVPcQG0ma7EC51Nspaa4geq8iRU4p1IbUYgbqM6LWIHzKnTmlLiB+nyJJTintTIrw8UN1GcpluC83sUrZCFuoD6pO4vX13fjJXIQN1ChxDOL19cPtuMlMhA3UKHUM4vX11fjJTIQN1CjlViEc/scL5GeuIEaJR8LX9/MvzRc3ECVXsUqnNtW9rVT4gaqlHrhVIljYMQN1Cn1VL/19fVP8RqJiRuoU4bPm9zdN+IGKpXh8+Z93tk34gYqleHzZv1L1u5icQO1Snvi1JHX8SIpiRuo1dtYiCnkHJ4SN1Cr9As1D2U8V1PcQLVexkpMIt9wuLiBemUYnMo5HC5uoF6JD/A9lm04XNxAxRIfOXUsV96IG6hY+n1vvsmUN+IGapamgn+SJ2/S3Ky4gW7kGQxfX3//NV4pAXEDVUt+KMOxgwzjU+IG6pZlMDxP3ogbqFv6bUSPpc8bcQOVS79L+rHkeSNuoHKZBsMP8ybxegZxA7VLfsbdf9Ku1xQ3ULtJjo1vjq2k3G9L3ED1cuzrd+LVXrxae+IG6rcaSzKhtXQdxuIG6rd9EGsyoc2leLm2xA0MwG6syaRSbSgqbmAI3sWiTGpnIV6vFXEDQ7CQcXTqsAMnyQwccQODsBirMrGVBB844gaG4WMsy8TWNuIVZyZuYBgmr2JdpvZx3il/4gYG4mu2tVMntub8wBE3MBR5jp36wXwfOOIGBiPPuQw/mOsDR9zAYOxl2rj4Bzvtd00XNzAcn2Jp5rD5se2YuLiBAXkTazOLg5bb4IgbGJDJVizOPLZazTIWNzAk+UfDj6222JdC3MCgFOm++WZl5j5jcQPD8jaWZz47i/HizcQNDMx+rM+MvuzGqzcRNzA0r2OB5rT2efphcXEDQ7OQ6xzfs23uT9uJI25gcLZLzC4+bedDvIUziRsYno1Sw+HfHaxMkTjiBgYo58lT51nbv2igStzAEGU8yLfBBYkjbmCQVmKVFrK2/+ncPXHEDQzSJOfJmhf48ubDmUf9ihsYpoVCqzXPsbW/+9P4uLiBgcp6ku9U3r9bXvx66o7EDQzVi87z5put1eW3i99+XIkbGKye5M2RVzvLabqTxA30Ua/yJhVxA720nffo8E6IG+inAeaNuIGeGl7eiBvoq8HljbiB3hpa3ogb6K+B5Y24gR7bK7u9X2biBvqs8HaieYkb6LUh5Y24gX5beBWrtlriBnpu0tV+W8mJG+i9gsdrZiVuoP8+DWPBpriBCnztdoO/RMQN1GAhzY4z3RI3UIc3sXjrI26gEi+LH7CZmriBWmzU3mEsbqAa25XPMBY3UI/JTqzgqogbqEmaE1g6Im6gKhsVb4EjbqAuC/UuoRI3UJtPa7GOKyFuoDq1fuCIG6hQnWs2xQ3UaO91rOUKiBuo0259HzjiBipV3weOuIFq1faBI26gXl/r2jZd3EDNlmqaZCxuoGqTz/X8ohI3ULmFavb5EzdQve1K9qUQNzAAG1X0GYsbGIQPFfQZixsYhsnb3vcZixsYioWPPT+rQdzAcGz3e2cKcQNDsv2mxz+pxA0My8Lb3nYaixsYnKWeDouLGxigjXex1PtA3MAg9bETR9zAQPWvE0fcwHD1rBNH3MCQvdjv0aFU4gYG7sO7vkw2FjcweAu7q7HyOyFuYAy23/agG0fcwEjsvez6pBhxA+OxsNtpP464gVGZfHrzJcZAKeIGRmdvab+TGYDiBkZp++XKVoyD3MQNjNZkcXmn5CxAcQPjtvdh+XWh7xxxA1y6tLj7cTX7h464AU5sLL5d3skXO+IGiLYXFxcXXy4vLy/vrK6urqaaqyNuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABK+D93xJPbn6NUxAAAAABJRU5ErkJggg==" style="width:100%;height:100%;object-fit:contain;" alt="DIF 로고"></div>
+      <h1>DIF 종합관리 시스템</h1>
+      <div class="auth-div"></div>
+      <p>Design Innovation Forum</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">로그인</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">계정 생성</button>
+      </div>
+      <div id="tab-login">
+        <div class="fg"><label class="fl">이메일</label><input type="email" id="login-email" class="fc" value="admin@dif.kr"></div>
+        <div class="fg"><label class="fl">비밀번호</label><input type="password" id="login-pw" class="fc" value="1234"></div>
+        <p class="tm" style="margin-bottom:.85rem;">테스트: admin@dif.kr / 1234 (학회장) &nbsp;·&nbsp; member@dif.kr / 1234 (학회원)</p>
+        <button class="btn btn-p btn-fw" onclick="doLogin()">로그인</button>
+      </div>
+      <div id="tab-register" style="display:none;">
+        <div class="fg"><label class="fl">이름</label><input type="text" id="reg-name" class="fc" placeholder="홍길동"></div>
+        <div class="fg"><label class="fl">이메일</label><input type="email" id="reg-email" class="fc" placeholder="example@email.com"></div>
+        <div class="fg"><label class="fl">학번</label><input type="text" id="reg-sid" class="fc" placeholder="20xxxxxx"></div>
+        <div class="fg"><label class="fl">학과</label><input type="text" id="reg-dept" class="fc" placeholder="디자인학과"></div>
+        <div class="fg"><label class="fl">비밀번호</label><input type="password" id="reg-pw" class="fc" placeholder="6자리 이상"></div>
+        <button class="btn btn-p btn-fw" onclick="doRegister()">계정 생성</button>
+        <p class="tm mt1" style="text-align:center;">계정 생성 후 운영진 승인이 필요합니다.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="s-hd">
+        <div class="s-logo">
+          <div class="s-logo-icon">DIF</div>
+          <div><span class="s-logo-text">DIF</span><span class="s-logo-sub" id="sidebar-sem">2026 2학기</span></div>
+        </div>
+      </div>
+      <nav class="s-nav">
+        <div class="nl">메인</div>
+        <button class="ni active" onclick="goPage('dashboard')"><span class="n-icon">🏠</span><span>대시보드</span></button>
+        <div class="nl">출석 &amp; 과제</div>
+        <button class="ni" onclick="goPage('attendance')"><span class="n-icon">✅</span><span>출석체크</span><span class="n-badge" id="nav-att-badge"></span></button>
+        <button class="ni" onclick="goPage('assignments')"><span class="n-icon">📋</span><span>과제 관리</span><span class="n-badge" id="nav-asg-badge"></span></button>
+        <div class="nl">학회원</div>
+        <button class="ni" onclick="goPage('members')"><span class="n-icon">👥</span><span>학회원 명단</span></button>
+        <button class="ni" onclick="goPage('profile')"><span class="n-icon">👤</span><span>내 프로필</span></button>
+        <div class="nl">자료실</div>
+        <button class="ni" onclick="goPage('files')"><span class="n-icon">📁</span><span>작업물 보관함</span></button>
+        <button class="ni" onclick="goPage('teamlog')"><span class="n-icon">📝</span><span>팀 로그</span></button>
+        <div id="admin-nav" style="display:none;">
+          <div class="nl">운영진</div>
+          <button class="ni" onclick="goPage('notify')"><span class="n-icon">🔔</span><span>알림 보내기</span><span class="n-badge" id="nav-notify-badge"></span></button>
+          <button class="ni" onclick="goPage('admin')"><span class="n-icon">⚙️</span><span>관리자 설정</span></button>
+        </div>
+      </nav>
+      <div class="s-user">
+        <div class="s-uinfo">
+          <div class="u-av" id="sidebar-avatar">홍</div>
+          <div><div class="u-name" id="sidebar-name">홍길동</div><div class="u-role" id="sidebar-role">학회원</div></div>
+        </div>
+        <button class="btn-lo" onclick="doLogout()">로그아웃</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h2 id="page-title">대시보드</h2>
+        <div style="display:flex;gap:7px;align-items:center;">
+          <div class="sem-wrap">
+            <button class="sem-badge" id="sem-btn" onclick="toggleSemDrop()"><span id="sem-label">2026 2학기</span> ▾</button>
+            <div class="sem-dd" id="sem-dd" style="display:none;">
+              <h4>학기 선택</h4>
+              <div id="sem-list"></div>
+              <div class="sem-add" id="sem-add-row" style="display:none;">
+                <input type="text" id="new-sem-inp" class="fc" placeholder="예) 2027 1학기" style="flex:1;font-size:12px;padding:.3rem .55rem;">
+                <button class="btn btn-p btn-sm" onclick="addSemester()">추가</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-y btn-sm">📅 <span id="today-date"></span></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div class="sg">
+            <div class="sc"><div class="sl">전체 학회원</div><div class="sv bl" id="s-total">0</div><div class="ss" id="s-sem-sub">2026 2학기</div></div>
+            <div class="sc"><div class="sl">오늘 출석률</div><div class="sv gr" id="s-att">—</div><div class="ss" id="s-att-sub">출석 정보 없음</div></div>
+            <div class="sc"><div class="sl">진행 중 과제</div><div class="sv ye" id="s-ongoing">0</div><div class="ss">마감 전</div></div>
+            <div class="sc"><div class="sl">내 미제출</div><div class="sv re" id="s-overdue">0</div><div class="ss" id="s-overdue-sub">내 기준</div></div>
+          </div>
+          <div class="g2" style="margin-bottom:1rem;">
+            <div class="card" style="margin-bottom:0;">
+              <div class="c-hd"><div><div class="c-title">📋 마감 임박 과제</div><div class="c-sub">7일 이내</div></div><button class="btn btn-o btn-sm" onclick="goPage('assignments')">전체 보기</button></div>
+              <div id="dash-asg"></div>
+            </div>
+            <div class="card" style="margin-bottom:0;">
+              <div class="c-hd"><div class="c-title">✅ 내 최근 출석</div></div>
+              <div id="dash-att"></div>
+            </div>
+          </div>
+          <!-- 달력 -->
+          <div class="card">
+            <div class="cal-nav">
+              <button class="cal-nbtn" onclick="calMove(-1)">‹ 이전</button>
+              <span class="cal-month" id="cal-title"></span>
+              <button class="cal-nbtn" onclick="calMove(1)">다음 ›</button>
+            </div>
+            <div class="cal-grid" id="cal-hd" style="margin-bottom:3px;"></div>
+            <div class="cal-grid" id="cal-body"></div>
+            <div style="margin-top:.65rem;display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;font-size:11px;">
+              <span class="tm">범례:</span>
+              <span class="cal-ev ce-bl">세미나</span><span class="cal-ev ce-ye">마감</span>
+              <span class="cal-ev ce-re">중요</span><span class="cal-ev ce-gr">행사</span>
+              <span id="cal-hint" class="tm" style="margin-left:auto;display:none;">날짜 클릭 → 일정 추가/편집</span>
+            </div>
+          </div>
+          <!-- 팀 현황 -->
+          <div class="card">
+            <div class="c-hd"><div class="c-title">👥 그룹별 현황</div></div>
+            <div id="dash-teams"></div>
+          </div>
+          <!-- 바로가기 -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.9rem;">
+            <div onclick="goPage('files')" style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:1rem;cursor:pointer;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+              <div style="font-size:20px;margin-bottom:5px;">📁</div><div style="font-size:13px;font-weight:600;margin-bottom:2px;">작업물 보관함</div><div class="tm" id="dash-files">—</div></div>
+            <div onclick="goPage('teamlog')" style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:1rem;cursor:pointer;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+              <div style="font-size:20px;margin-bottom:5px;">📝</div><div style="font-size:13px;font-weight:600;margin-bottom:2px;">팀 로그</div><div class="tm" id="dash-logs">—</div></div>
+            <div id="dash-notify-card" onclick="goPage('notify')" style="display:none;background:#fff;border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:1rem;cursor:pointer;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+              <div style="font-size:20px;margin-bottom:5px;">🔔</div><div style="font-size:13px;font-weight:600;margin-bottom:2px;">알림 보내기</div><div class="tm">미제출·결석자 알림</div></div>
+          </div>
+        </div>
+
+        <!-- ATTENDANCE -->
+        <div class="page" id="page-attendance">
+          <div id="att-admin-panel" style="display:none;"></div>
+          <div id="att-excuse-panel"></div>
+          <div id="att-member-panel"></div>
+          <div class="card" style="margin-top:1rem;">
+            <div class="c-hd">
+              <div class="c-title">내 출석 기록</div>
+              <button class="btn btn-o btn-sm" id="export-att-btn" onclick="exportAttCSV()" style="display:none;">📊 명부 내보내기</button>
+            </div>
+            <div class="tw"><table><thead><tr><th>날짜</th><th>구분</th><th>상태</th><th>코드</th><th>비고</th></tr></thead><tbody id="att-history"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- ASSIGNMENTS -->
+        <div class="page" id="page-assignments">
+          <div id="asg-admin-tb" style="display:none;margin-bottom:1rem;">
+            <button class="btn btn-p" onclick="openNewAsgModal()">+ 새 과제 추가</button>
+          </div>
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchAsgTab('ongoing',this)">진행 중</button>
+            <button class="tab-btn" onclick="switchAsgTab('submitted',this)">제출 완료</button>
+            <button class="tab-btn" onclick="switchAsgTab('overdue',this)">마감 지남</button>
+            <button class="tab-btn" id="all-sub-tab" onclick="switchAsgTab('all',this)" style="display:none;">전체 현황</button>
+          </div>
+          <div id="asg-content"></div>
+        </div>
+
+        <!-- MEMBERS -->
+        <div class="page" id="page-members">
+          <div class="fr">
+            <input type="text" class="si fc" placeholder="이름, 학번 검색..." oninput="filterM('search',this.value)">
+            <select class="fc" style="max-width:180px;" onchange="filterM('group',this.value)">
+              <option value="">전체 프로젝트 조</option>
+              <option>메인 프로젝트 - 1조</option><option>메인 프로젝트 - 2조</option>
+              <option>메인 프로젝트 - 3조</option><option>메인 프로젝트 - 4조</option>
+              <option>메인 프로젝트 - 5조</option>
+            </select>
+            <select class="fc" style="max-width:150px;" onchange="filterM('study',this.value)">
+              <option value="">전체 스터디</option>
+              <option>포토샵 스터디</option><option>일러스트 스터디</option><option value="none">스터디 미참가</option>
+            </select>
+            <select class="fc" style="max-width:130px;" onchange="filterM('rank',this.value)">
+              <option value="">전체 직급</option>
+              <option>학회장</option><option>부학회장</option><option>임원진</option><option>학회원</option>
+            </select>
+            <button class="btn btn-p btn-sm ml-auto" id="add-member-btn" onclick="openMemberModal(null)" style="display:none;">+ 학회원 추가</button>
+          </div>
+          <div class="card">
+            <div class="c-hd"><div class="c-title">학회원 명단</div><span class="badge b-bl" id="member-cnt">0명</span></div>
+            <div class="tw"><table><thead><tr><th style="width:34px;"></th><th>이름</th><th>학번</th><th>학과</th><th>프로젝트 조</th><th>스터디</th><th>직급</th><th>상태</th><th>관리</th></tr></thead><tbody id="member-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="page" id="page-profile">
+          <div class="ph">
+            <div class="pav" id="prof-av">홍</div>
+            <div>
+              <div style="font-size:18px;font-weight:700;" id="prof-name">홍길동</div>
+              <div style="display:flex;gap:6px;margin-top:4px;align-items:center;flex-wrap:wrap;">
+                <span class="rank r-member" id="prof-rank">학회원</span>
+                <span class="badge b-bl" id="prof-group">조</span><span id="prof-study"></span>
+                <span id="prof-studies"></span>
+                <span class="tm" id="prof-dept">학과</span>
+              </div>
+              <div class="tm mt1" id="prof-email">email</div>
+            </div>
+            <button class="btn btn-o btn-sm ml-auto" onclick="openEditProfileModal()">프로필 수정</button>
+          </div>
+          <div class="g2">
+            <div class="card"><div class="c-hd"><div class="c-title">출석 통계</div></div><div id="prof-att"></div></div>
+            <div class="card"><div class="c-hd"><div class="c-title">과제 통계</div></div><div id="prof-asg"></div></div>
+          </div>
+        </div>
+
+        <!-- FILES -->
+        <div class="page" id="page-files">
+          <!-- Supabase 설정 배너 -->
+          <div id="storage-config-banner" class="storage-config-banner">
+            <span style="font-size:18px;">⚙️</span>
+            <div style="flex:1;">
+              <strong>Supabase 연결 필요</strong> — Project URL과 Anon Key를 입력해야 파일 업로드가 활성화됩니다.
+            </div>
+            <button class="btn btn-sm btn-y" onclick="openStorageConfigModal()">연결 설정</button>
+          </div>
+          <div class="fr">
+            <button class="btn btn-p" id="upload-btn" onclick="openUploadModal()" disabled>
+              ⬆ PDF 업로드
+            </button>
+            <button class="btn btn-o btn-sm" onclick="openStorageConfigModal()">⚙️ Supabase 설정</button>
+            <select class="fc" style="max-width:190px;" onchange="fF('team',this.value)">
+              <option value="">전체 그룹</option>
+              <option>포토샵 스터디</option><option>일러스트 스터디</option>
+              <option>메인 프로젝트 - 1조</option><option>메인 프로젝트 - 2조</option>
+              <option>메인 프로젝트 - 3조</option><option>메인 프로젝트 - 4조</option><option>메인 프로젝트 - 5조</option>
+            </select>
+            <select class="fc" style="max-width:120px;" onchange="fF('type',this.value)">
+              <option value="">전체 형식</option><option>PDF</option><option>PSD</option><option>AI</option><option>PNG</option><option>기타</option>
+            </select>
+            <input type="text" class="si fc" placeholder="파일명 검색..." oninput="fF('search',this.value)">
+            <button class="btn btn-o btn-sm" onclick="exportFileCSV()">📊 목록</button>
+          </div>
+          <div class="sg">
+            <div class="sc"><div class="sl">전체</div><div class="sv bl" id="fs-total">0</div><div class="ss">개</div></div>
+            <div class="sc"><div class="sl">PDF</div><div class="sv re" id="fs-pdf">0</div><div class="ss">개</div></div>
+            <div class="sc"><div class="sl">PSD/AI</div><div class="sv" style="color:#1565c0;" id="fs-psd">0</div><div class="ss">개</div></div>
+            <div class="sc"><div class="sl">드라이브 연결</div><div class="sv gr" id="fs-linked">0</div><div class="ss">개 연결됨</div></div>
+          </div>
+          <div class="card">
+            <div class="c-hd"><div class="c-title">📁 작업물 목록</div></div>
+            <div class="tw"><table><thead><tr><th style="width:34px;"></th><th>파일명</th><th>카테고리</th><th>그룹</th><th>업로더</th><th>과제</th><th>업로드일</th><th>용량</th><th>관리</th></tr></thead><tbody id="file-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- TEAM LOG -->
+        <div class="page" id="page-teamlog">
+          <div class="fr">
+            <button class="btn btn-p" onclick="openLogModal(null)">+ 로그 작성</button>
+            <select class="fc" style="max-width:190px;" id="log-gf" onchange="renderLogs()">
+              <option value="">전체 그룹</option><option>전체</option>
+              <option>포토샵 스터디</option><option>일러스트 스터디</option>
+              <option>메인 프로젝트 - 1조</option><option>메인 프로젝트 - 2조</option>
+              <option>메인 프로젝트 - 3조</option><option>메인 프로젝트 - 4조</option><option>메인 프로젝트 - 5조</option>
+            </select>
+            <select class="fc" style="max-width:140px;" id="log-cf" onchange="renderLogs()">
+              <option value="">전체 카테고리</option>
+              <option>회의록</option><option>작업 기록</option><option>결정 사항</option><option>공지</option><option>기타</option>
+            </select>
+            <button class="btn btn-o btn-sm" onclick="exportLogCSV()">📥 백업</button>
+          </div>
+          <div id="log-content"></div>
+        </div>
+
+        <!-- NOTIFY -->
+        <div class="page" id="page-notify">
+          <div class="al al-i"><span>ℹ️</span><div>알림은 시스템 내 기록됩니다. 카카오톡 전송은 서버 배포 후 API 연동이 필요합니다.</div></div>
+          <div class="g2">
+            <div class="card"><div class="c-hd"><div class="c-title">📋 미제출자 알림</div></div><div id="notify-ns"></div></div>
+            <div class="card"><div class="c-hd"><div class="c-title">📅 출석 미확인자 알림</div></div><div id="notify-ab"></div></div>
+          </div>
+          <div class="card"><div class="c-hd"><div class="c-title">📨 발송 내역</div><button class="btn btn-o btn-sm" onclick="clearNotify()">내역 지우기</button></div><div id="notify-log"></div></div>
+          <div class="card">
+            <div class="c-hd"><div class="c-title">✏️ 직접 알림 작성</div></div>
+            <div class="fg"><label class="fl">수신 대상</label>
+              <select id="notify-target" class="fc" style="max-width:230px;">
+                <option value="all">전체 학회원</option>
+                <option>포토샵 스터디</option><option>일러스트 스터디</option>
+                <option>메인 프로젝트 - 1조</option><option>메인 프로젝트 - 2조</option>
+                <option>메인 프로젝트 - 3조</option><option>메인 프로젝트 - 4조</option><option>메인 프로젝트 - 5조</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">내용</label><textarea id="notify-msg" class="fc" rows="3" placeholder="알림 내용..."></textarea></div>
+            <div style="display:flex;gap:7px;">
+              <button class="btn btn-p" onclick="sendCustom()">📤 전송</button>
+              <button class="btn btn-o" onclick="previewKakao()">💬 카카오 미리보기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADMIN -->
+        <div class="page" id="page-admin">
+          <div class="al al-w"><span>⚠️</span><div><strong>운영진 전용</strong> — 학회장, 부학회장, 임원진만 접근 가능합니다.</div></div>
+          <div class="g2">
+            <div class="card"><div class="c-hd"><div class="c-title">회원 승인 대기</div></div><div id="admin-pending"></div></div>
+            <div class="card"><div class="c-hd"><div class="c-title">직급 현황</div></div><div id="admin-ranks"></div></div>
+          </div>
+          <div class="card"><div class="c-hd"><div class="c-title">미제출자 명단</div></div><div id="admin-ns"></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="modal-root"></div>
+<div class="toast" id="toast"></div>
