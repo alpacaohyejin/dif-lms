@@ -2949,18 +2949,33 @@ window.saveCalEvent = async function(dateStr) {
   if (!title) return toast('일정명을 입력해주세요.', 'err');
 
   try {
-    const { error } = await window.supabaseClient
+    const payload = {
+      date: String(dateStr),
+      title: title,
+      type: type
+    };
+
+    const { data, error } = await window.supabaseClient
       .from('events')
-      .insert([{ date: dateStr, title, type }]);
+      .insert([payload])
+      .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase Events Error:', error);
+      throw error;
+    }
 
-    toast('일정이 등록되었습니다.', 'ok');
+    toast('일정이 등록되었습니다! 📅', 'ok');
     closeModal();
-    if (window.API) await window.API.fetchInitialData();
+
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
     if (typeof renderCalendar === 'function') renderCalendar();
+
   } catch (err) {
-    toast('일정 저장 실패: ' + err.message, 'err');
+    console.error('saveCalEvent error:', err);
+    toast('일정 저장 실패: ' + (err.message || '데이터베이스 에러'), 'err');
   }
 };
 
