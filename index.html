@@ -1585,25 +1585,38 @@ window.renderAttendance = function() {
   // 3. 출석 히스토리 명단
   const tbody = document.getElementById('att-history');
   if (tbody) {
-    let sessions = (DB.attendance || []).slice().reverse();
+    // 날짜 기준 최신순(내림차순) 정렬
+    const sessions = (DB.attendance || []).slice().sort((a, b) => {
+      const dateA = new Date(a.date || a.created_at || 0).getTime();
+      const dateB = new Date(b.date || b.created_at || 0).getTime();
+      return dateB - dateA; // 최신 날짜 우선
+    });
+
     if (sessions.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--gray-500);">출석 기록이 없습니다.</td></tr>';
     } else {
       tbody.innerHTML = sessions.map(a => {
         const records = Array.isArray(a.records) ? a.records : [];
-        let att = 0, late = 0, abs = 0;
+        let att = 0, late = 0, abs = 0, exc = 0;
         records.forEach(r => {
           if (r.status === '출석') att++;
           else if (r.status === '지각') late++;
+          else if (r.status === '사유' || r.status === '공결') exc++;
           else abs++;
         });
 
         return `
           <tr>
             <td><strong>${esc(a.title)}</strong></td>
-            <td>${fmt(a.date)}</td>
+            <td><span style="font-family:monospace; font-weight:600;">${fmt(a.date)}</span></td>
             <td><span class="badge b-gy">${esc(a.target_group || '전체')}</span></td>
-            <td><span style="color:var(--green)">출석 ${att}</span> / <span style="color:var(--yellow-dark)">지각 ${late}</span> / <span style="color:var(--red)">결석 ${abs}</span> (총 ${records.length}명)</td>
+            <td>
+              <span style="color:var(--green); font-weight:600;">출석 ${att}</span> / 
+              <span style="color:var(--yellow-dark); font-weight:600;">지각 ${late}</span> / 
+              <span style="color:var(--blue); font-weight:600;">사유 ${exc}</span> / 
+              <span style="color:var(--red); font-weight:600;">결석 ${abs}</span>
+              <span style="font-size:11px; color:var(--gray-400); margin-left:4px;">(총 ${records.length}명)</span>
+            </td>
             <td>
               <button class="btn btn-o btn-sm" onclick="openAttDetailModal('${a.id}')">상세보기</button>
               ${isOfficer ? `<button class="btn btn-d btn-sm" style="margin-left:4px;" onclick="deleteAttendanceSession('${a.id}')">삭제</button>` : ''}
@@ -1945,7 +1958,11 @@ window.renderDashboard = function() {
   const aSub = document.getElementById('s-att-sub');
   
   // 가장 최근 세션 또는 오늘 세션 탐색
-  const allSessions = (DB.attendance || []).slice().reverse();
+  const allSessions = (DB.attendance || []).slice().sort((a, b) => {
+    const dateA = new Date(a.date || a.created_at || 0).getTime();
+    const dateB = new Date(b.date || b.created_at || 0).getTime();
+    return dateB - dateA; // 최신 날짜 우선
+  });
   const todaySessions = allSessions.filter(a => a.date === today);
   
   // 본인 대상 세션 확인
