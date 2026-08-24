@@ -1118,40 +1118,31 @@ window.setupRealtime = function() {
   }
 
   window.realtimeChannel = window.supabaseClient
-    .channel('dif-lms-realtime-room')
+    .channel('dif-lms-global-sync')
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public' },
+      { event: '*', schema: 'public', table: 'attendance' },
       async (payload) => {
-        // 1. 최신 데이터 동기화
+        console.log('⚡ [출석 실시간 변동 감지]:', payload);
+        
+        // 1. 전체 최신 데이터 다시 가져오기
         if (window.API && typeof window.API.fetchInitialData === 'function') {
           await window.API.fetchInitialData();
         }
 
-        // 2. 현재 열려 있는 화면 리렌더링
-        const activePage = document.querySelector('.page.active');
-        if (activePage) {
-          const pageId = activePage.id.replace('page-', '');
-          if (pageId === 'attendance' && typeof renderAttendance === 'function') {
-            renderAttendance();
-          } else if (pageId === 'dashboard' && typeof renderDashboard === 'function') {
-            renderDashboard();
-          } else if (pageId === 'assignments' && typeof renderAssignments === 'function') {
-            renderAssignments(window.curAsgTab || 'ongoing');
-          } else if (pageId === 'members' && typeof renderMembers === 'function') {
-            renderMembers();
-          }
-        }
+        // 2. 대시보드 및 출석 탭 강제 리렌더링
+        if (typeof renderDashboard === 'function') renderDashboard();
+        if (typeof renderAttendance === 'function') renderAttendance();
 
-        // 3. 만약 출석 현황 상세 모달이 열려 있다면 모달 내용도 즉시 실시간 갱신
-        if (window.activeAttModalSessionId) {
-          window.openAttStatusModal(window.activeAttModalSessionId);
+        // 3. 출석 현황 상세 모달이 열려 있다면 모달도 즉시 갱신
+        if (window.activeAttModalSessionId && typeof openAttStatusModal === 'function') {
+          openAttStatusModal(window.activeAttModalSessionId);
         }
-
-        if (typeof updateNotifyBadge === 'function') updateNotifyBadge();
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      console.log('📡 Realtime Subscription Status:', status);
+    });
 };
 
 // 안전한 세션 체크 1회 보장
@@ -1697,68 +1688,77 @@ window.setTodayCode = async function() {
 window.submitAttCode = async function() {
   const input = document.getElementById('my-att-code');
   const rawInputCode = input ? input.value : '';
-  const inputCode = rawInputCode.replace(/\s+/g, '').toUpperCase(); // 입력값 공백 제거 및 대문자 변환
+  const inputCode = rawInputCode.replace(/\s+/g, '').toUpperCase();
   const currentUser = DB.currentUser;
 
   if (!currentUser) return toast('로그인이 필요합니다.', 'err');
   if (!inputCode) return toast('출석 코드를 입력해주세요.', 'err');
 
-  // 활성화된 세션 중 코드가 일치하는 세션을 우선 검색
-  const sessions = (DB.attendance || []).slice().reverse();
-  const session = sessions.find(a => {
-    if (!a.code) return false;
-    const sessionCode = String(a.code).replace(/\s+/g, '').toUpperCase();
-    return sessionCode === inputCode;
-  });
-
-  if (!session) {
-    return toast('출석 코드가 올바르지 않거나 이미 마감된 세션입니다.', 'err');
-  }
-
-  // 대상자 여부 확인
-  const isTarget = session.target_group === '전체' || 
-                   session.target_group === currentUser.group || 
-                   (Array.isArray(currentUser.studies) && currentUser.studies.includes(session.target_group));
-
-  let records = Array.isArray(session.records) ? [...session.records] : [];
-  let myRecord = records.find(r => String(r.uid) === String(currentUser.id) || String(r.userId) === String(currentUser.id));
-
-  const now = new Date();
-  const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-  if (myRecord) {
-    if (myRecord.status === '출석') {
-      return toast('이미 출석 인증이 완료된 상태입니다.', 'ok');
-    }
-    myRecord.status = '출석';
-    myRecord.time = nowTime;
-  } else {
-    records.push({
-      uid: currentUser.id,
-      userId: currentUser.id,
-      name: currentUser.name,
-      group: currentUser.group || '',
-      status: '출석',
-      time: nowTime
-    });
-  }
-
+  // 1. 서버에서 최신 attendance 세션을 직접 조회하여 검증
   try {
-    const { error } = await window.supabaseClient
+    const { data: latestSessions, error: fetchErr } = await window.supabaseClient
+      .from('attendance')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (fetchErr) throw fetchErr;
+
+    const session = (latestSessions || []).find(a => {
+      if (!a.code) return false;
+      return String(a.code).replace(/\s+/g, '').toUpperCase() === inputCode;
+    });
+
+    if (!session) {
+      return toast('출석 코드가 올바르지 않거나 이미 마감된 세션입니다.', 'err');
+    }
+
+    let records = Array.isArray(session.records) ? [...session.records] : [];
+    const myIdStr = String(currentUser.id).trim();
+    let myRecord = records.find(r => String(r.uid || r.userId).trim() === myIdStr);
+
+    const now = new Date();
+    const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    if (myRecord) {
+      if (myRecord.status === '출석') {
+        return toast('이미 출석 인증이 완료되었습니다.', 'ok');
+      }
+      myRecord.status = '출석';
+      myRecord.time = nowTime;
+    } else {
+      records.push({
+        uid: currentUser.id,
+        userId: currentUser.id,
+        name: currentUser.name,
+        group: currentUser.group || '',
+        status: '출석',
+        time: nowTime
+      });
+    }
+
+    // 2. Supabase DB에 UPDATE 반영
+    const { error: updateErr } = await window.supabaseClient
       .from('attendance')
       .update({ records: records })
       .eq('id', session.id);
 
-    if (error) throw error;
+    if (updateErr) {
+      console.error('Supabase update error:', updateErr);
+      throw new Error(updateErr.message || '데이터베이스 저장 실패 (권한 또는 RLS 문제)');
+    }
 
     toast('출석 인증이 완료되었습니다! ✅', 'ok');
     if (input) input.value = '';
-    
-    if (window.API) await window.API.fetchInitialData();
-    renderAttendance();
+
+    // 3. 로컬 DB 동기화 및 즉시 리렌더링
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
+    if (typeof renderAttendance === 'function') renderAttendance();
     if (typeof renderDashboard === 'function') renderDashboard();
+
   } catch (err) {
-    console.error('submitAttCode error:', err);
+    console.error('submitAttCode fatal error:', err);
     toast('출석 처리 실패: ' + err.message, 'err');
   }
 };
