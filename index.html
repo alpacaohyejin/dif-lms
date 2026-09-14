@@ -678,6 +678,8 @@ window.DB = window.DB || {
   notifications: []
 };
 
+window.RANKS = ['학회장', '부학회장', '총무', '기획', '홍보', '학회원'];
+window.USER_STATUSES = ['활동중', '수료', '휴학', '탈퇴', '제명'];
 // 권한 판별 헬퍼
 window.isAdmin = function(u) {
   if (!u) return false;
@@ -2182,8 +2184,8 @@ window.renderMembers = function() {
     <td><span class="badge ${m.status==='active'?'b-gr':'b-re'}">${m.status==='active'?'활동 중':'비활성'}</span></td>
     <td style="white-space:nowrap;">
       <button class="btn btn-o btn-sm" onclick="viewMemberProfile('${m.id}')">프로필</button>
-      ${canMng(u) ? `<button class="btn btn-o btn-sm" onclick="openMemberModal('${m.id}')" style="margin-left:3px;">편집</button>
-      <button class="btn btn-d btn-sm" onclick="delMember('${m.id}')" style="margin-left:3px;">삭제</button>` : ''}
+      ${canMng(u) ? `<button class="btn btn-o btn-sm" onclick="openUserEditModal('${m.id}')" style="margin-left:3px;">편집</button>
+      <button class="btn btn-d btn-sm" onclick="deleteUser('${m.id}')" style="margin-left:3px;">삭제</button>` : ''}
     </td>
   </tr>`).join('');
 };
@@ -2194,108 +2196,120 @@ window.filterM = function(key, val) {
   renderMembers();
 };
 
-window.openMemberModal = function(id) {
-  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
-  let m = id ? (DB.users||[]).find(x => String(x.id) === String(id)) : null;
-  let isNew = !m;
-  if (isNew) {
-    m = { name: '', email: '', studentId: '', dept: '', group: '', rank: '학회원', status: 'active', studies: [] };
-  }
-  let html = `<div class="modal fc" onclick="event.stopPropagation()">
-      <h3>${isNew ? '새 학회원 추가' : '학회원 정보 수정'}</h3>
-      <div class="fg"><label class="fl">이름</label><input type="text" id="em-name" class="fc" value="${esc(m.name||'')}"></div>
-      <div class="fg"><label class="fl">이메일</label><input type="email" id="em-email" class="fc" value="${esc(m.email||'')}"></div>
-      <div class="fg"><label class="fl">학번</label><input type="text" id="em-sid" class="fc" value="${esc(m.studentId||'')}"></div>
-      <div class="fg"><label class="fl">학과</label><input type="text" id="em-dept" class="fc" value="${esc(m.dept||'')}"></div>
-      <div class="fg"><label class="fl">소속 조</label>
-          <select id="em-group" class="fc">
-              <option value="">— 미지정 —</option>
-              ${(DB.groups||[]).map(g => `<option ${m.group === g ? 'selected' : ''}>${esc(g)}</option>`).join('')}
-          </select>
+window.openUserEditModal = function(userId) {
+  const targetUser = (DB.users || []).find(u => String(u.id) === String(userId));
+  if (!targetUser) return toast('해당 학회원 정보를 찾을 수 없습니다.', 'err');
+
+  const ranks = window.RANKS || ['학회장', '부학회장', '총무', '기획', '홍보', '학회원'];
+  const statuses = window.USER_STATUSES || ['활동중', '수료', '휴학', '탈퇴'];
+
+  const modalHtml = `
+    <div class="modal fc" style="max-width:440px;" onclick="event.stopPropagation()">
+      <div class="c-hd">
+        <div class="c-title">👤 학회원 정보 수정</div>
+        <button class="btn-lo" onclick="closeModal()">✕</button>
       </div>
-      <div class="fg"><label class="fl">스터디 (다중 선택)</label>
-          <select id="em-study" class="fc" multiple>
-              ${(DB.studies||[]).map(s => `<option ${(m.studies||[]).includes(s) ? 'selected' : ''}>${esc(s)}</option>`).join('')}
-          </select>
+      <div class="fg mt1">
+        <label class="fl">이름 *</label>
+        <input type="text" id="edit-user-name" class="fc" value="${esc(targetUser.name || '')}">
       </div>
-      <div class="fg"><label class="fl">직급</label>
-          <select id="em-rank" class="fc">
-              ${RANKS.map(r => `<option ${m.rank === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}
-          </select>
+      <div class="fg">
+        <label class="fl">학번 *</label>
+        <input type="text" id="edit-user-sid" class="fc" value="${esc(targetUser.sid || targetUser.student_id || '')}">
       </div>
-      <div class="fg"><label class="fl">상태</label>
-          <select id="em-status" class="fc">
-              ${['active', 'pending', 'inactive'].map(st => `<option ${m.status === st ? 'selected' : ''}>${st}</option>`).join('')}
-          </select>
+      <div class="fg">
+        <label class="fl">학과/전공</label>
+        <input type="text" id="edit-user-major" class="fc" value="${esc(targetUser.major || '')}">
+      </div>
+      <div class="fg">
+        <label class="fl">직책 / 역할</label>
+        <select id="edit-user-rank" class="fc">
+          ${ranks.map(r => `<option value="${r}" ${targetUser.rank === r ? 'selected' : ''}>${r}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">소속 그룹 / 스터디</label>
+        <input type="text" id="edit-user-group" class="fc" value="${esc(targetUser.group || '')}" placeholder="예: 스터디A, 1조">
+      </div>
+      <div class="fg">
+        <label class="fl">활동 상태</label>
+        <select id="edit-user-status" class="fc">
+          ${statuses.map(s => `<option value="${s}" ${targetUser.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
       </div>
       <div class="fr mt1">
-          <button class="btn btn-p" onclick="saveMember('${isNew ? '' : m.id}')">저장</button>
-          <button class="btn btn-o" onclick="closeModal()">취소</button>
+        <button class="btn btn-p" onclick="saveUserEdit('${targetUser.id}')">저장하기</button>
+        <button class="btn btn-o" onclick="closeModal()">취소</button>
       </div>
-  </div>`;
-  openModal(html);
+    </div>`;
+  openModal(modalHtml);
 };
 
-window.saveMember = async function(id) {
-  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
-  const name = document.getElementById('em-name')?.value.trim();
-  const group = document.getElementById('em-group')?.value.trim();
-  const rank = document.getElementById('em-rank')?.value.trim();
-  const status = document.getElementById('em-status')?.value.trim();
-  const studentId = document.getElementById('em-sid')?.value.trim();
-  const dept = document.getElementById('em-dept')?.value.trim();
-  const email = document.getElementById('em-email')?.value.trim();
-  
-  const opts = document.getElementById('em-study')?.options;
-  let studies = [];
-  if(opts) {
-      for(let i=0; i<opts.length; i++) {
-          if(opts[i].selected) studies.push(opts[i].value);
-      }
+// 학회원 정보 수정 저장 함수
+window.saveUserEdit = async function(userId) {
+  const name = document.getElementById('edit-user-name').value.trim();
+  const sid = document.getElementById('edit-user-sid').value.trim();
+  const major = document.getElementById('edit-user-major').value.trim();
+  const rank = document.getElementById('edit-user-rank').value;
+  const group = document.getElementById('edit-user-group').value.trim();
+  const status = document.getElementById('edit-user-status').value;
+
+  if (!name || !sid) return toast('이름과 학번을 입력해주세요.', 'err');
+
+  try {
+    const updateData = { name, sid, major, rank, group, status };
+
+    const { error } = await window.supabaseClient
+      .from('users')
+      .update(updateData)
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    toast('학회원 정보가 수정되었습니다.', 'ok');
+    closeModal();
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
+    if (typeof renderMembers === 'function') renderMembers();
+  } catch (err) {
+    console.error('saveUserEdit error:', err);
+    toast('수정 실패: ' + (err.message || '데이터베이스 오류'), 'err');
   }
-  
-  let u = id ? (DB.users||[]).find(x => String(x.id) === String(id)) : null;
-  if (u) {
-      const updates = {};
-      if(name) updates.name = name;
-      if(group!==undefined) updates.group = group;
-      if(rank) updates.rank = rank;
-      if(status) updates.status = status;
-      if(studentId!==undefined) updates.studentId = studentId;
-      if(dept!==undefined) updates.dept = dept;
-      if(email!==undefined) updates.email = email;
-      updates.studies = studies;
-      
-      if(window.API) {
-        try { await window.API.updateUser(u.id, updates); } catch(e) { return toast('수정 오류', 'err'); }
-      } else {
-        Object.assign(u, updates);
-      }
-      toast('학회원 정보가 수정되었습니다.', 'ok');
-  } else {
-      if(!name) return toast('이름을 입력해주세요.', 'err');
-      const newId = String(Date.now());
-      const newEmail = email || `${newId}@dif.kr`;
-      const newUser = { id: newId, name, email: newEmail, pw: '1234', studentId: studentId || '20260000', dept: dept || '미지정', group: group || '미지정', rank: rank || '학회원', status: status || 'active', avatar: name[0] || '학', studies };
-      
-      if(window.API) {
-        try { await window.API.insertUser(newUser); } catch(e) { return toast('생성 오류', 'err'); }
-      } else {
-        DB.users.push(newUser);
-      }
-      toast('새 학회원이 추가되었습니다.', 'ok');
-  }
-  closeModal();
-  renderMembers();
 };
 
-window.delMember = function(id) {
-  if(!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
-  if(!confirm('정말 이 학회원을 비활성화/삭제 처리하시겠습니까?')) return;
-  const m = (DB.users||[]).find(x => String(x.id) === String(id));
-  if(m) m.status = 'inactive';
-  toast('삭제(비활성화) 처리되었습니다.', 'ok');
-  renderMembers();
+window.deleteUser = async function(userId) {
+  const targetUser = (DB.users || []).find(u => String(u.id) === String(userId));
+  const userName = targetUser ? targetUser.name : '해당 학회원';
+
+  if (!confirm(`정말로 [${userName}] 학회원을 삭제하시겠습니까?\n삭제된 계정 정보는 복구할 수 없습니다.`)) {
+    return;
+  }
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Supabase user delete error:', error);
+      throw error;
+    }
+
+    toast(`[${userName}] 학회원이 삭제되었습니다.`, 'ok');
+
+    // 최신 데이터 갱신 및 리렌더링
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      await window.API.fetchInitialData();
+    }
+    if (typeof renderMembers === 'function') renderMembers();
+    if (typeof renderDashboard === 'function') renderDashboard();
+
+  } catch (err) {
+    console.error('deleteUser error:', err);
+    toast('삭제 실패: ' + (err.message || '데이터베이스 오류'), 'err');
+  }
 };
 
 window.viewMemberProfile = function(id) {
