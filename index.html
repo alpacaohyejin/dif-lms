@@ -2292,8 +2292,8 @@ window.renderMembers = function() {
     <td><strong>${esc(m.name)}</strong></td>
     <td style="font-family:monospace;font-size:12px;">${esc(m.studentId)}</td>
     <td>${esc(m.dept)}</td>
-    <td><div style="display:flex;gap:3px;flex-wrap:wrap;">${(m.group||'').split(',').filter(x=>x.trim()).map(g => `<span class="badge b-bl" style="font-size:11px;">${esc(g.trim())}</span>`).join('') || '<span class="badge b-bl" style="font-size:11px;">—</span>'}</div></td>
-    <td><div style="display:flex;gap:3px;flex-wrap:wrap;">${studyBadges(m.studies)}</div></td>
+    <td><span class="badge b-bl" style="font-size:11px;">${esc(m.project_group || m.group || '미지정')}</span></td>
+    <td><span class="badge b-gy" style="font-size:11px;">${esc(m.study_group || '스터디 없음')}</span></td>
     <td><span class="rank ${typeof rCls === 'function' ? rCls(m.rank) : 'r-member'}">${esc(m.rank)}</span></td>
     <td><span class="badge ${m.status==='active'||m.status==='활동중'||m.status==='활동 중'?'b-gr':'b-re'}">${esc(m.status==='active'?'활동중':(m.status||'비활성'))}</span></td>
     <td style="white-space:nowrap;">
@@ -2315,7 +2315,10 @@ window.openUserEditModal = function(userId) {
   if (!targetUser) return toast('해당 학회원 정보를 찾을 수 없습니다.', 'err');
 
   const ranks = window.RANKS || ['학회장', '부학회장', '총무', '스터디팀', '프로젝트팀', 'SNS팀', '학회원'];
-  const statuses = window.USER_STATUSES || ['활동중', '수료', '휴학', '탈퇴'];
+  const projectOptions = ['미지정', '프로젝트 전체', '프로젝트 1조', '프로젝트 2조', '프로젝트 3조'];
+
+  const curProj = targetUser.project_group || targetUser.group || '미지정';
+  const curStudy = targetUser.study_group || '스터디 없음';
 
   const modalHtml = `
     <div class="modal fc" style="max-width:440px;" onclick="event.stopPropagation()">
@@ -2323,34 +2326,40 @@ window.openUserEditModal = function(userId) {
         <div class="c-title">👤 학회원 정보 수정</div>
         <button class="btn-lo" onclick="closeModal()">✕</button>
       </div>
-      <div class="fg mt1">
-        <label class="fl">이름 *</label>
-        <input type="text" id="edit-user-name" class="fc" value="${esc(targetUser.name || '')}">
-      </div>
-      <div class="fg">
-        <label class="fl">학번 *</label>
-        <input type="text" id="edit-user-sid" class="fc" value="${esc(targetUser.sid || targetUser.student_id || '')}">
-      </div>
-      <div class="fg">
-        <label class="fl">학과/전공</label>
-        <input type="text" id="edit-user-major" class="fc" value="${esc(targetUser.major || '')}">
-      </div>
+      <div class="fg mt1"><label class="fl">이름</label><input type="text" id="edit-user-name" class="fc" value="${esc(targetUser.name || '')}"></div>
+      <div class="fg"><label class="fl">학번</label><input type="text" id="edit-user-sid" class="fc" value="${esc(targetUser.sid || targetUser.student_id || '')}"></div>
+      <div class="fg"><label class="fl">학과/전공</label><input type="text" id="edit-user-major" class="fc" value="${esc(targetUser.major || '')}"></div>
+      
       <div class="fg">
         <label class="fl">직책 / 역할</label>
         <select id="edit-user-rank" class="fc">
           ${ranks.map(r => `<option value="${r}" ${(targetUser.rank || '학회원') === r ? 'selected' : ''}>${r}</option>`).join('')}
         </select>
       </div>
+
       <div class="fg">
-        <label class="fl">소속 그룹 / 스터디</label>
-        ${window.renderMemberGroupChips(targetUser.group || '')}
+        <label class="fl">프로젝트 조</label>
+        <select id="edit-user-project" class="fc">
+          ${projectOptions.map(p => `<option value="${p}" ${curProj === p ? 'selected' : ''}>${p}</option>`).join('')}
+        </select>
       </div>
+
+      <div class="fg">
+        <label class="fl">스터디 그룹</label>
+        <input type="text" id="edit-user-study" class="fc" value="${esc(curStudy === '스터디 없음' ? '' : curStudy)}" placeholder="예: UI/UX 스터디, 모션그래픽 (없으면 빈칸)">
+      </div>
+
       <div class="fg">
         <label class="fl">활동 상태</label>
         <select id="edit-user-status" class="fc">
-          ${statuses.map(s => `<option value="${s}" ${targetUser.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          <option value="활동중" ${targetUser.status === '활동중' || targetUser.status === 'active' ? 'selected' : ''}>활동중</option>
+          <option value="수료" ${targetUser.status === '수료' ? 'selected' : ''}>수료</option>
+          <option value="휴학" ${targetUser.status === '휴학' ? 'selected' : ''}>휴학</option>
+          <option value="탈퇴" ${targetUser.status === '탈퇴' ? 'selected' : ''}>탈퇴</option>
+          <option value="비활성" ${targetUser.status === '비활성' ? 'selected' : ''}>비활성</option>
         </select>
       </div>
+
       <div class="fr mt1">
         <button class="btn btn-p" onclick="saveUserEdit('${targetUser.id}')">저장하기</button>
         <button class="btn btn-o" onclick="closeModal()">취소</button>
@@ -2361,85 +2370,51 @@ window.openUserEditModal = function(userId) {
 
 // 학회원 정보 수정 저장 함수
 window.saveUserEdit = async function(userId) {
-  const targetUser = (DB.users || []).find(u => String(u.id) === String(userId));
-  
-  const nameEl = document.getElementById('edit-user-name');
-  const sidEl = document.getElementById('edit-user-sid');
-  const majorEl = document.getElementById('edit-user-major');
-  const rankEl = document.getElementById('edit-user-rank');
-  const groupEl = document.getElementById('edit-user-group');
-  const statusEl = document.getElementById('edit-user-status');
-  const chks = document.querySelectorAll('.edit-member-group-chk:checked');
-  
-  const name = nameEl ? nameEl.value.trim() : (targetUser ? targetUser.name : '');
-  const sid = sidEl ? sidEl.value.trim() : (targetUser ? (targetUser.sid || targetUser.student_id) : '');
-  const major = majorEl ? majorEl.value.trim() : (targetUser ? targetUser.major : '');
-  const rank = rankEl ? rankEl.value : (targetUser ? targetUser.rank : '학회원');
-  
-  let group = '전체';
-  if (chks.length > 0) {
-    group = Array.from(chks).map(c => c.value).join(', ');
-  } else if (groupEl) {
-    group = groupEl.value.trim();
-  } else if (targetUser && targetUser.group) {
-    group = targetUser.group;
-  }
-  
-  let status = statusEl ? statusEl.value : (targetUser ? targetUser.status : '활동중');
-  if (!status || status === '비활성') {
-    // 사용자가 명시적으로 '비활성'이나 '탈퇴'를 고른 게 아니라면 기본 '활동중'으로 저장
-    if (statusEl && statusEl.value === '비활성') {
-      status = '비활성';
-    } else {
-      status = '활동중';
-    }
-  }
+  const targetIdx = (DB.users || []).findIndex(u => String(u.id) === String(userId));
+  const targetUser = targetIdx !== -1 ? DB.users[targetIdx] : null;
 
-  if (!name || !sid) return toast('이름과 학번을 입력해주세요.', 'err');
+  const name = document.getElementById('edit-user-name')?.value.trim() || targetUser?.name || '';
+  const sid = document.getElementById('edit-user-sid')?.value.trim() || targetUser?.sid || '';
+  const major = document.getElementById('edit-user-major')?.value.trim() || targetUser?.major || '';
+  const rank = document.getElementById('edit-user-rank')?.value || targetUser?.rank || '학회원';
+  const project_group = document.getElementById('edit-user-project')?.value || '미지정';
+  
+  let studyInput = document.getElementById('edit-user-study')?.value.trim();
+  const study_group = studyInput ? studyInput : '스터디 없음';
+  const status = document.getElementById('edit-user-status')?.value || '활동중';
 
   try {
-    const updateData = { 
-      name, 
-      sid, 
-      major, 
-      rank, 
-      group: group || '전체', 
-      status: status 
+    const updatePayload = {
+      name,
+      sid,
+      major,
+      rank,
+      project_group,
+      study_group,
+      group: project_group !== '미지정' ? project_group : study_group, // 하위 호환용
+      status
     };
 
-    const targetIdx = (DB.users || []).findIndex(u => String(u.id) === String(userId));
-
-    const { data, error } = await window.supabaseClient
+    const { error } = await window.supabaseClient
       .from('users')
-      .update(updateData)
-      .eq('id', userId)
-      .select();
+      .update(updatePayload)
+      .eq('id', userId);
 
     if (error) throw error;
 
-    // 1. 로컬 DB.users 배열 즉시 업데이트
+    // 로컬 메모리 즉시 갱신
     if (targetIdx !== -1) {
-      DB.users[targetIdx] = { ...DB.users[targetIdx], ...updateData };
+      DB.users[targetIdx] = { ...DB.users[targetIdx], ...updatePayload };
     }
-
-    // 2. 현재 로그인한 본인의 정보라면 세션 유저 객체도 동기화
     if (DB.currentUser && String(DB.currentUser.id) === String(userId)) {
-      DB.currentUser = { ...DB.currentUser, ...updateData };
+      DB.currentUser = { ...DB.currentUser, ...updatePayload };
     }
 
-    toast('학회원 정보가 성공적으로 수정되었습니다.', 'ok');
+    toast('학회원 정보가 성공적으로 변경되었습니다.', 'ok');
     closeModal();
 
-    // 3. 화면 즉시 리렌더링
     if (typeof renderMembers === 'function') renderMembers();
     if (typeof renderDashboard === 'function') renderDashboard();
-
-    // 4. 백그라운드 전체 최신 데이터 동기화
-    if (window.API && typeof window.API.fetchInitialData === 'function') {
-      window.API.fetchInitialData().then(() => {
-        if (typeof renderMembers === 'function') renderMembers();
-      });
-    }
   } catch (err) {
     console.error('saveUserEdit error:', err);
     toast('수정 실패: ' + (err.message || '데이터베이스 오류'), 'err');
@@ -2492,8 +2467,8 @@ window.viewMemberProfile = function(id) {
       </div>
     </div>
     <div style="font-size:14px; margin-bottom:1rem; line-height:1.6;">
-      <div>소속 조/스터디: <strong>${(m.group||'').split(',').filter(x=>x.trim()).map(g => `<span class="badge b-bl" style="font-size:11px; margin-right:2px;">${esc(g.trim())}</span>`).join('') || '<span class="badge b-bl" style="font-size:11px;">—</span>'}</strong></div>
-      <div>스터디: ${studyBadges(m.studies)}</div>
+      <div>소속 조: <strong><span class="badge b-bl" style="font-size:11px;">${esc(m.project_group || m.group || '미지정')}</span></strong></div>
+      <div>스터디: <strong><span class="badge b-gy" style="font-size:11px;">${esc(m.study_group || '스터디 없음')}</span></strong></div>
       <div>이메일: ${esc(m.email)}</div>
       <div>상태: ${m.status==='active'||m.status==='활동중'||m.status==='활동 중'?'<span style="color:var(--green)">'+esc(m.status==='active'?'활동중':m.status)+'</span>':'<span style="color:var(--red)">'+esc(m.status||'비활성')+'</span>'}</div>
     </div>
