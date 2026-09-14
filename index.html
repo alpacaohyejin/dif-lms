@@ -678,7 +678,7 @@ window.DB = window.DB || {
   notifications: []
 };
 
-window.RANKS = ['학회장', '부학회장', '총무', '기획', '홍보', '학회원'];
+window.RANKS = ['학회장', '부학회장', '총무', '스터디팀', '프로젝트팀', 'SNS팀', '학회원'];
 window.USER_STATUSES = ['활동중', '수료', '휴학', '탈퇴', '비활성'];
 // 권한 판별 헬퍼
 window.isAdmin = function(u) {
@@ -2200,7 +2200,7 @@ window.openUserEditModal = function(userId) {
   const targetUser = (DB.users || []).find(u => String(u.id) === String(userId));
   if (!targetUser) return toast('해당 학회원 정보를 찾을 수 없습니다.', 'err');
 
-  const ranks = window.RANKS || ['학회장', '부학회장', '총무', '기획', '홍보', '학회원'];
+  const ranks = window.RANKS || ['학회장', '부학회장', '총무', '스터디팀', '프로젝트팀', 'SNS팀', '학회원'];
   const statuses = window.USER_STATUSES || ['활동중', '수료', '휴학', '탈퇴'];
 
   const modalHtml = `
@@ -2224,7 +2224,7 @@ window.openUserEditModal = function(userId) {
       <div class="fg">
         <label class="fl">직책 / 역할</label>
         <select id="edit-user-rank" class="fc">
-          ${ranks.map(r => `<option value="${r}" ${targetUser.rank === r ? 'selected' : ''}>${r}</option>`).join('')}
+          ${ranks.map(r => `<option value="${r}" ${(targetUser.rank || '학회원') === r ? 'selected' : ''}>${r}</option>`).join('')}
         </select>
       </div>
       <div class="fg">
