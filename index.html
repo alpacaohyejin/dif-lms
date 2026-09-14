@@ -679,7 +679,7 @@ window.DB = window.DB || {
 };
 
 window.RANKS = ['학회장', '부학회장', '총무', '기획', '홍보', '학회원'];
-window.USER_STATUSES = ['활동중', '수료', '휴학', '탈퇴', '제명'];
+window.USER_STATUSES = ['활동중', '수료', '휴학', '탈퇴', '비활성'];
 // 권한 판별 헬퍼
 window.isAdmin = function(u) {
   if (!u) return false;
@@ -2181,7 +2181,7 @@ window.renderMembers = function() {
     <td><span class="badge b-bl" style="font-size:11px;">${esc(m.group||'—')}</span></td>
     <td><div style="display:flex;gap:3px;flex-wrap:wrap;">${studyBadges(m.studies)}</div></td>
     <td><span class="rank ${typeof rCls === 'function' ? rCls(m.rank) : 'r-member'}">${esc(m.rank)}</span></td>
-    <td><span class="badge ${m.status==='active'?'b-gr':'b-re'}">${m.status==='active'?'활동 중':'비활성'}</span></td>
+    <td><span class="badge ${m.status==='active'||m.status==='활동중'||m.status==='활동 중'?'b-gr':'b-re'}">${esc(m.status==='active'?'활동중':(m.status||'비활성'))}</span></td>
     <td style="white-space:nowrap;">
       <button class="btn btn-o btn-sm" onclick="viewMemberProfile('${m.id}')">프로필</button>
       ${canMng(u) ? `<button class="btn btn-o btn-sm" onclick="openUserEditModal('${m.id}')" style="margin-left:3px;">편집</button>
@@ -2262,10 +2262,14 @@ window.saveUserEdit = async function(userId) {
   const rank = rankEl ? rankEl.value : (targetUser ? targetUser.rank : '학회원');
   const group = groupEl ? groupEl.value.trim() : (targetUser ? targetUser.group : '전체');
   
-  // 핵심: status 엘리먼트가 없거나 빈 값이면 기존 status 유지, 없으면 기본값 '활동중'
-  let status = statusEl ? statusEl.value : (targetUser && targetUser.status ? targetUser.status : '활동중');
-  if (!status || status.trim() === '') {
-    status = '활동중';
+  let status = statusEl ? statusEl.value : (targetUser ? targetUser.status : '활동중');
+  if (!status || status === '비활성') {
+    // 사용자가 명시적으로 '비활성'이나 '탈퇴'를 고른 게 아니라면 기본 '활동중'으로 저장
+    if (statusEl && statusEl.value === '비활성') {
+      status = '비활성';
+    } else {
+      status = '활동중';
+    }
   }
 
   if (!name || !sid) return toast('이름과 학번을 입력해주세요.', 'err');
@@ -2350,7 +2354,7 @@ window.viewMemberProfile = function(id) {
       <div>소속 조: <strong>${esc(m.group)}</strong></div>
       <div>스터디: ${studyBadges(m.studies)}</div>
       <div>이메일: ${esc(m.email)}</div>
-      <div>상태: ${m.status==='active'?'<span style="color:var(--green)">활동 중</span>':'<span style="color:var(--red)">비활성/대기</span>'}</div>
+      <div>상태: ${m.status==='active'||m.status==='활동중'||m.status==='활동 중'?'<span style="color:var(--green)">'+esc(m.status==='active'?'활동중':m.status)+'</span>':'<span style="color:var(--red)">'+esc(m.status||'비활성')+'</span>'}</div>
     </div>
     <button class="btn btn-o mt1" style="width:100%;" onclick="closeModal()">닫기</button>
   </div>`;
