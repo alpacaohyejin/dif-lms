@@ -1597,7 +1597,6 @@ window.createAsg = async function(e) {
 
   const title = titleInput ? titleInput.value.trim() : '';
   const deadline = deadlineInput ? deadlineInput.value.trim() : '';
-  const groupSelect = document.getElementById('asg-target-group') || document.getElementById('na-group');
   const chks = document.querySelectorAll('.assign-group-chk:checked');
   let groupName = '전체';
   if (chks.length > 0) {
