@@ -802,29 +802,22 @@ window.getAllTargetGroups = function() {
   return { groups, studies };
 };
 
-// <select> 태그용 <option> HTML 생성 헬퍼
+// DIF 표준 그룹 목록 정의 (1조~3조 및 프로젝트 전체 포함)
+window.DIF_GROUPS = [
+  '전체',
+  '프로젝트 전체',
+  '프로젝트 1조',
+  '프로젝트 2조',
+  '프로젝트 3조',
+  '스터디팀',
+  'SNS팀'
+];
+
+// 일반 드롭다운(<select>)용 옵션 렌더러
 window.renderGroupOptionsHtml = function(selectedVal = '전체') {
-  const { groups, studies } = window.getAllTargetGroups();
-  
-  let html = `<option value="전체" ${selectedVal === '전체' ? 'selected' : ''}>전체 (정기 세미나/공통)</option>`;
-  
-  if (groups.length > 0) {
-    html += '<optgroup label="── 프로젝트 조 ──">';
-    groups.forEach(g => {
-      html += `<option value="${esc(g)}" ${selectedVal === g ? 'selected' : ''}>${esc(g)}</option>`;
-    });
-    html += '</optgroup>';
-  }
-
-  if (studies.length > 0) {
-    html += '<optgroup label="── 스터디 ──">';
-    studies.forEach(s => {
-      html += `<option value="${esc(s)}" ${selectedVal === s ? 'selected' : ''}>${esc(s)}</option>`;
-    });
-    html += '</optgroup>';
-  }
-
-  return html;
+  return window.DIF_GROUPS.map(g => 
+    `<option value="${esc(g)}" ${g === selectedVal ? 'selected' : ''}>${esc(g)}</option>`
+  ).join('');
 };
 
 window.avC = function(n) {
@@ -1345,7 +1338,7 @@ window.renderAssignments = function(tab = 'ongoing') {
     return true;
   });
   
-  if(!isAdmin) asgns = asgns.filter(a => a.group === '전체' || a.group === u.group);
+  if(!isAdmin) asgns = asgns.filter(a => window.isUserInAssignmentTarget(u, a.group));
   
   if(!asgns.length) {
     const msgs = {ongoing:'진행 중인 과제가 없습니다', submitted:'제출 완료한 과제가 없습니다', overdue:'마감 지난 미제출 과제가 없습니다'};
@@ -1489,14 +1482,31 @@ window.viewAsgSubmissions = function(id) {
   if (window.lucide) window.lucide.createIcons();
 };
 
+window.isUserInAssignmentTarget = function(user, targetGroupStr) {
+  if (!targetGroupStr || targetGroupStr === '전체') return true;
+  if (!user) return false;
+
+  const userGroup = (user.group || '').trim();
+  const targetList = targetGroupStr.split(',').map(s => s.trim());
+
+  // 1. 과제 대상에 '전체'가 포함된 경우
+  if (targetList.includes('전체')) return true;
+
+  // 2. 본인의 소속 조가 직접 명시된 경우 (예: '프로젝트 1조')
+  if (targetList.includes(userGroup)) return true;
+
+  // 3. 대상에 '프로젝트 전체'가 있고 본인이 1조, 2조, 3조 중 하나인 경우
+  const isProjectMember = ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(userGroup);
+  if (targetList.includes('프로젝트 전체') && isProjectMember) {
+    return true;
+  }
+
+  return false;
+};
+
 window.renderTargetGroupChips = function(selectedGroups = []) {
-  // 현재 등록된 유저들의 중복 없는 그룹 목록 추출 (기본 '전체' 포함)
-  const existingGroups = Array.from(new Set(
-    (DB.users || []).map(u => (u.group || '').trim()).filter(g => g && g !== '전체')
-  ));
-  
-  // 기본 추천 그룹 목록 (필요시 추가)
-  const allAvailableGroups = Array.from(new Set([...existingGroups, '1조', '2조', '3조', '스터디A', '스터디B']));
+  // 기본 추천 그룹 목록 (전체 제외)
+  const allAvailableGroups = window.DIF_GROUPS.filter(g => g !== '전체');
 
   const isAll = selectedGroups.includes('전체') || selectedGroups.length === 0;
 
@@ -2447,7 +2457,7 @@ function getProfileAttStats(uid) {
 
 // 과제 통계 계산 헬퍼
 function getProfileAsgStats(uid, group) {
-  const elig = (DB?.assignments || []).filter(a => a.group === '전체' || a.group === group);
+  const elig = (DB?.assignments || []).filter(a => window.isUserInAssignmentTarget({group}, a.group));
   const sub = elig.filter(a => (a.submissions || []).find(s => String(s.userId) === String(uid))).length;
   const total = elig.length;
   return { total, submitted: sub, rate: total ? Math.round((sub / total) * 100) : 0 };
