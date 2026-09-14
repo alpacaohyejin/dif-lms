@@ -1489,6 +1489,65 @@ window.viewAsgSubmissions = function(id) {
   if (window.lucide) window.lucide.createIcons();
 };
 
+window.renderTargetGroupChips = function(selectedGroups = []) {
+  // 현재 등록된 유저들의 중복 없는 그룹 목록 추출 (기본 '전체' 포함)
+  const existingGroups = Array.from(new Set(
+    (DB.users || []).map(u => (u.group || '').trim()).filter(g => g && g !== '전체')
+  ));
+  
+  // 기본 추천 그룹 목록 (필요시 추가)
+  const allAvailableGroups = Array.from(new Set([...existingGroups, '1조', '2조', '3조', '스터디A', '스터디B']));
+
+  const isAll = selectedGroups.includes('전체') || selectedGroups.length === 0;
+
+  let html = `
+    <div class="target-group-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+      <label class="chip-label" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:16px; border:1px solid var(--gray-300); background:${isAll ? 'var(--blue-light, #e8f0fe)' : '#fff'}; color:${isAll ? 'var(--blue, #1a73e8)' : 'inherit'}; font-weight:600;">
+        <input type="checkbox" value="전체" class="assign-group-chk" ${isAll ? 'checked' : ''} onchange="handleGroupCheckChange(this)" style="display:none;">
+        전체 대상
+      </label>
+  `;
+
+  allAvailableGroups.forEach(grp => {
+    const checked = !isAll && selectedGroups.includes(grp);
+    html += `
+      <label class="chip-label" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:16px; border:1px solid var(--gray-300); background:${checked ? 'var(--blue-light, #e8f0fe)' : '#fff'}; color:${checked ? 'var(--blue, #1a73e8)' : 'inherit'}; font-weight:600;">
+        <input type="checkbox" value="${esc(grp)}" class="assign-group-chk" ${checked ? 'checked' : ''} onchange="handleGroupCheckChange(this)" style="display:none;">
+        ${esc(grp)}
+      </label>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
+};
+
+// '전체' 체크 시 다른 체크박스 해제, 특정 조 체크 시 '전체' 해제
+window.handleGroupCheckChange = function(el) {
+  const chks = document.querySelectorAll('.assign-group-chk');
+  if (el.value === '전체' && el.checked) {
+    chks.forEach(c => { if (c.value !== '전체') c.checked = false; });
+  } else if (el.value !== '전체' && el.checked) {
+    chks.forEach(c => { if (c.value === '전체') c.checked = false; });
+  }
+
+  // 체크 여부에 따른 스타일 토글
+  chks.forEach(c => {
+    const parent = c.closest('.chip-label');
+    if (parent) {
+      if (c.checked) {
+        parent.style.background = 'var(--blue-light, #e8f0fe)';
+        parent.style.color = 'var(--blue, #1a73e8)';
+        parent.style.borderColor = 'var(--blue, #1a73e8)';
+      } else {
+        parent.style.background = '#fff';
+        parent.style.color = 'inherit';
+        parent.style.borderColor = 'var(--gray-300, #dadce0)';
+      }
+    }
+  });
+};
+
 window.openNewAsgModal = window.openCreateAsgModal = function() {
   if (!canMng(DB.currentUser)) return toast('권한이 없습니다.', 'err');
 
@@ -1502,9 +1561,7 @@ window.openNewAsgModal = window.openCreateAsgModal = function() {
       <div class="fg mt1"><label class="fl">과제명 *</label><input type="text" id="na-title" class="fc" placeholder="예: 1차 브랜딩 시안 제출"></div>
       <div class="fg"><label class="fl">마감 기한 *</label><input type="date" id="na-deadline" class="fc" value="${defDate}"></div>
       <div class="fg"><label class="fl">대상 그룹 (조/스터디) *</label>
-        <select id="na-group" class="fc">
-          ${window.renderGroupOptionsHtml('전체')}
-        </select>
+        ${window.renderTargetGroupChips([])}
       </div>
       <div class="fg"><label class="fl">구글 폼 링크 (선택)</label><input type="text" id="na-url" class="fc" placeholder="https://forms.gle/..."></div>
       <div class="fg"><label class="fl">제출 확인 인증코드 (선택)</label><input type="text" id="na-code" class="fc" placeholder="예: PASS2026"></div>
@@ -1530,7 +1587,15 @@ window.createAsg = async function(e) {
 
   const title = titleInput ? titleInput.value.trim() : '';
   const deadline = deadlineInput ? deadlineInput.value.trim() : '';
-  const groupName = groupSelect ? groupSelect.value : '전체';
+  const groupSelect = document.getElementById('asg-target-group') || document.getElementById('na-group');
+  const chks = document.querySelectorAll('.assign-group-chk:checked');
+  let groupName = '전체';
+  if (chks.length > 0) {
+    const vals = Array.from(chks).map(c => c.value);
+    if (!vals.includes('전체')) groupName = vals.join(', ');
+  } else if (groupSelect) {
+    groupName = groupSelect.value;
+  }
   const descText = descInput ? descInput.value.trim() : '';
   const formUrl = formUrlInput ? formUrlInput.value.trim() : '';
   const submitCode = submitCodeInput ? submitCodeInput.value.trim() : '';
