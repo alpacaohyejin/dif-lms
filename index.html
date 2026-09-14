@@ -744,7 +744,7 @@ window.rCls = function(r) {
 };
 
 window.canMng = function(u) {
-  return u && (u.rank === '학회장' || u.rank === '부학회장' || u.rank === '임원진');
+  return u && u.rank && u.rank !== '학회원';
 };
 
 window.isAdmin = function(u) {
