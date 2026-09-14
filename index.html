@@ -813,6 +813,49 @@ window.DIF_GROUPS = [
   'SNS팀'
 ];
 
+window.MEMBER_GROUPS = [
+  '1조',
+  '2조',
+  '3조',
+  '프로젝트 미참가',
+  '포토샵 스터디 기초',
+  '포토샵 스터디 심화',
+  '블렌더 스터디'
+];
+
+window.renderMemberGroupChips = function(currentGroupStr = '') {
+  const selectedList = (currentGroupStr || '').split(',').map(s => s.trim()).filter(Boolean);
+
+  let html = `<div id="member-group-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">`;
+  
+  window.MEMBER_GROUPS.forEach(grp => {
+    const checked = selectedList.includes(grp);
+    html += `
+      <label class="chip-label" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:16px; border:1px solid var(--gray-300); background:${checked ? 'var(--blue-light, #e8f0fe)' : '#fff'}; color:${checked ? 'var(--blue, #1a73e8)' : 'inherit'}; font-weight:600;">
+        <input type="checkbox" value="${esc(grp)}" class="edit-member-group-chk" ${checked ? 'checked' : ''} onchange="handleMemberGroupCheckChange(this)" style="display:none;">
+        ${esc(grp)}
+      </label>
+    `;
+  });
+  html += `</div>`;
+  return html;
+};
+
+window.handleMemberGroupCheckChange = function(el) {
+  const parent = el.closest('.chip-label');
+  if (parent) {
+    if (el.checked) {
+      parent.style.background = 'var(--blue-light, #e8f0fe)';
+      parent.style.color = 'var(--blue, #1a73e8)';
+      parent.style.borderColor = 'var(--blue, #1a73e8)';
+    } else {
+      parent.style.background = '#fff';
+      parent.style.color = 'inherit';
+      parent.style.borderColor = 'var(--gray-300, #dadce0)';
+    }
+  }
+};
+
 // 일반 드롭다운(<select>)용 옵션 렌더러
 window.renderGroupOptionsHtml = function(selectedVal = '전체') {
   return window.DIF_GROUPS.map(g => 
@@ -2252,7 +2295,7 @@ window.renderMembers = function() {
     <td><strong>${esc(m.name)}</strong></td>
     <td style="font-family:monospace;font-size:12px;">${esc(m.studentId)}</td>
     <td>${esc(m.dept)}</td>
-    <td><span class="badge b-bl" style="font-size:11px;">${esc(m.group||'—')}</span></td>
+    <td><div style="display:flex;gap:3px;flex-wrap:wrap;">${(m.group||'').split(',').filter(x=>x.trim()).map(g => `<span class="badge b-bl" style="font-size:11px;">${esc(g.trim())}</span>`).join('') || '<span class="badge b-bl" style="font-size:11px;">—</span>'}</div></td>
     <td><div style="display:flex;gap:3px;flex-wrap:wrap;">${studyBadges(m.studies)}</div></td>
     <td><span class="rank ${typeof rCls === 'function' ? rCls(m.rank) : 'r-member'}">${esc(m.rank)}</span></td>
     <td><span class="badge ${m.status==='active'||m.status==='활동중'||m.status==='활동 중'?'b-gr':'b-re'}">${esc(m.status==='active'?'활동중':(m.status||'비활성'))}</span></td>
@@ -2303,7 +2346,7 @@ window.openUserEditModal = function(userId) {
       </div>
       <div class="fg">
         <label class="fl">소속 그룹 / 스터디</label>
-        <input type="text" id="edit-user-group" class="fc" value="${esc(targetUser.group || '')}" placeholder="예: 스터디A, 1조">
+        ${window.renderMemberGroupChips(targetUser.group || '')}
       </div>
       <div class="fg">
         <label class="fl">활동 상태</label>
@@ -2329,12 +2372,21 @@ window.saveUserEdit = async function(userId) {
   const rankEl = document.getElementById('edit-user-rank');
   const groupEl = document.getElementById('edit-user-group');
   const statusEl = document.getElementById('edit-user-status');
-
+  const chks = document.querySelectorAll('.edit-member-group-chk:checked');
+  
   const name = nameEl ? nameEl.value.trim() : (targetUser ? targetUser.name : '');
   const sid = sidEl ? sidEl.value.trim() : (targetUser ? (targetUser.sid || targetUser.student_id) : '');
   const major = majorEl ? majorEl.value.trim() : (targetUser ? targetUser.major : '');
   const rank = rankEl ? rankEl.value : (targetUser ? targetUser.rank : '학회원');
-  const group = groupEl ? groupEl.value.trim() : (targetUser ? targetUser.group : '전체');
+  
+  let group = '전체';
+  if (chks.length > 0) {
+    group = Array.from(chks).map(c => c.value).join(', ');
+  } else if (groupEl) {
+    group = groupEl.value.trim();
+  } else if (targetUser && targetUser.group) {
+    group = targetUser.group;
+  }
   
   let status = statusEl ? statusEl.value : (targetUser ? targetUser.status : '활동중');
   if (!status || status === '비활성') {
@@ -2425,7 +2477,7 @@ window.viewMemberProfile = function(id) {
       </div>
     </div>
     <div style="font-size:14px; margin-bottom:1rem; line-height:1.6;">
-      <div>소속 조: <strong>${esc(m.group)}</strong></div>
+      <div>소속 조/스터디: <strong>${(m.group||'').split(',').filter(x=>x.trim()).map(g => `<span class="badge b-bl" style="font-size:11px; margin-right:2px;">${esc(g.trim())}</span>`).join('') || '<span class="badge b-bl" style="font-size:11px;">—</span>'}</strong></div>
       <div>스터디: ${studyBadges(m.studies)}</div>
       <div>이메일: ${esc(m.email)}</div>
       <div>상태: ${m.status==='active'||m.status==='활동중'||m.status==='활동 중'?'<span style="color:var(--green)">'+esc(m.status==='active'?'활동중':m.status)+'</span>':'<span style="color:var(--red)">'+esc(m.status||'비활성')+'</span>'}</div>
