@@ -2247,17 +2247,38 @@ window.openUserEditModal = function(userId) {
 
 // 학회원 정보 수정 저장 함수
 window.saveUserEdit = async function(userId) {
-  const name = document.getElementById('edit-user-name').value.trim();
-  const sid = document.getElementById('edit-user-sid').value.trim();
-  const major = document.getElementById('edit-user-major').value.trim();
-  const rank = document.getElementById('edit-user-rank').value;
-  const group = document.getElementById('edit-user-group').value.trim();
-  const status = document.getElementById('edit-user-status').value;
+  const targetUser = (DB.users || []).find(u => String(u.id) === String(userId));
+  
+  const nameEl = document.getElementById('edit-user-name');
+  const sidEl = document.getElementById('edit-user-sid');
+  const majorEl = document.getElementById('edit-user-major');
+  const rankEl = document.getElementById('edit-user-rank');
+  const groupEl = document.getElementById('edit-user-group');
+  const statusEl = document.getElementById('edit-user-status');
+
+  const name = nameEl ? nameEl.value.trim() : (targetUser ? targetUser.name : '');
+  const sid = sidEl ? sidEl.value.trim() : (targetUser ? (targetUser.sid || targetUser.student_id) : '');
+  const major = majorEl ? majorEl.value.trim() : (targetUser ? targetUser.major : '');
+  const rank = rankEl ? rankEl.value : (targetUser ? targetUser.rank : '학회원');
+  const group = groupEl ? groupEl.value.trim() : (targetUser ? targetUser.group : '전체');
+  
+  // 핵심: status 엘리먼트가 없거나 빈 값이면 기존 status 유지, 없으면 기본값 '활동중'
+  let status = statusEl ? statusEl.value : (targetUser && targetUser.status ? targetUser.status : '활동중');
+  if (!status || status.trim() === '') {
+    status = '활동중';
+  }
 
   if (!name || !sid) return toast('이름과 학번을 입력해주세요.', 'err');
 
   try {
-    const updateData = { name, sid, major, rank, group, status };
+    const updateData = { 
+      name, 
+      sid, 
+      major, 
+      rank, 
+      group: group || '전체', 
+      status: status 
+    };
 
     const { error } = await window.supabaseClient
       .from('users')
@@ -2266,12 +2287,14 @@ window.saveUserEdit = async function(userId) {
 
     if (error) throw error;
 
-    toast('학회원 정보가 수정되었습니다.', 'ok');
+    toast('학회원 정보 및 직급이 수정되었습니다.', 'ok');
     closeModal();
+
     if (window.API && typeof window.API.fetchInitialData === 'function') {
       await window.API.fetchInitialData();
     }
     if (typeof renderMembers === 'function') renderMembers();
+    if (typeof renderDashboard === 'function') renderDashboard();
   } catch (err) {
     console.error('saveUserEdit error:', err);
     toast('수정 실패: ' + (err.message || '데이터베이스 오류'), 'err');
