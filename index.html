@@ -1240,35 +1240,32 @@ window.setupRealtime = function() {
     .channel('dif-lms-global-sync')
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: 'attendance' },
+      { event: '*', schema: 'public' },
       async (payload) => {
-        console.log('⚡ [출석 실시간 변동 감지]:', payload);
+        console.log('⚡ [Realtime 변동 감지]:', payload);
         
-        // 1. 전체 최신 데이터 다시 가져오기
         if (window.API && typeof window.API.fetchInitialData === 'function') {
           await window.API.fetchInitialData();
         }
 
-        // 2. 대시보드 및 출석 탭 강제 리렌더링
-        if (typeof renderDashboard === 'function') renderDashboard();
-        if (typeof renderAttendance === 'function') renderAttendance();
+        const activePage = document.querySelector('.page.active');
+        if (activePage) {
+          const pageId = activePage.id.replace('page-', '');
+          if (pageId === 'members' && typeof renderMembers === 'function') renderMembers();
+          if (pageId === 'attendance' && typeof renderAttendance === 'function') renderAttendance();
+          if (pageId === 'dashboard' && typeof renderDashboard === 'function') renderDashboard();
+          if (pageId === 'assignments' && typeof renderAssignments === 'function') renderAssignments();
+        }
 
-        // 3. 출석 현황 상세 모달이 열려 있다면 모달도 즉시 갱신
-        if (window.activeAttModalSessionId && typeof openAttStatusModal === 'function') {
+        // 출석 현황 상세 모달이 열려 있다면 갱신
+        if (payload.table === 'attendance' && window.activeAttModalSessionId && typeof openAttStatusModal === 'function') {
           openAttStatusModal(window.activeAttModalSessionId);
         }
-      }
-    )
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'events' },
-      async (payload) => {
-        console.log('⚡ [일정 실시간 변동 감지]:', payload);
-        if (window.API && typeof window.API.fetchInitialData === 'function') {
-          await window.API.fetchInitialData();
+        
+        // 달력 렌더링은 dashboard 내에서 처리될 수도 있으나 별도로 호출이 필요할 경우 추가
+        if (payload.table === 'events' && typeof renderCalendar === 'function') {
+          renderCalendar();
         }
-        if (typeof renderDashboard === 'function') renderDashboard();
-        if (typeof renderCalendar === 'function') renderCalendar();
       }
     )
     .subscribe((status) => {
@@ -2410,21 +2407,39 @@ window.saveUserEdit = async function(userId) {
       status: status 
     };
 
-    const { error } = await window.supabaseClient
+    const targetIdx = (DB.users || []).findIndex(u => String(u.id) === String(userId));
+
+    const { data, error } = await window.supabaseClient
       .from('users')
       .update(updateData)
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
     if (error) throw error;
 
-    toast('학회원 정보 및 직급이 수정되었습니다.', 'ok');
+    // 1. 로컬 DB.users 배열 즉시 업데이트
+    if (targetIdx !== -1) {
+      DB.users[targetIdx] = { ...DB.users[targetIdx], ...updateData };
+    }
+
+    // 2. 현재 로그인한 본인의 정보라면 세션 유저 객체도 동기화
+    if (DB.currentUser && String(DB.currentUser.id) === String(userId)) {
+      DB.currentUser = { ...DB.currentUser, ...updateData };
+    }
+
+    toast('학회원 정보가 성공적으로 수정되었습니다.', 'ok');
     closeModal();
 
-    if (window.API && typeof window.API.fetchInitialData === 'function') {
-      await window.API.fetchInitialData();
-    }
+    // 3. 화면 즉시 리렌더링
     if (typeof renderMembers === 'function') renderMembers();
     if (typeof renderDashboard === 'function') renderDashboard();
+
+    // 4. 백그라운드 전체 최신 데이터 동기화
+    if (window.API && typeof window.API.fetchInitialData === 'function') {
+      window.API.fetchInitialData().then(() => {
+        if (typeof renderMembers === 'function') renderMembers();
+      });
+    }
   } catch (err) {
     console.error('saveUserEdit error:', err);
     toast('수정 실패: ' + (err.message || '데이터베이스 오류'), 'err');
