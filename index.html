@@ -1095,8 +1095,8 @@ window.handleLogin = async function(e) {
 
   try {
     let user = (DB.users || []).find(u => 
-      (u.email === inputId || String(u.studentId) === inputId || String(u.student_id) === inputId) && 
-      (u.pw === inputPw || u.password === inputPw)
+      (String(u.email || '').trim() === inputId || String(u.studentId || u.student_id || '').trim() === inputId) && 
+      (String(u.pw || u.password || '').trim() === inputPw)
     );
 
     if (!user && window.supabaseClient) {
@@ -1106,7 +1106,7 @@ window.handleLogin = async function(e) {
         .or(`email.eq.${inputId},student_id.eq.${inputId}`);
 
       if (!error && data && data.length > 0) {
-        const found = data.find(d => d.password === inputPw || d.pw === inputPw);
+        const found = data.find(d => String(d.password || d.pw || '').trim() === inputPw);
         if (found) {
           user = { ...found, studentId: found.student_id, group: found.group_name };
         }
@@ -1149,13 +1149,23 @@ window.doRegister = async function() {
   const email = document.getElementById('reg-email')?.value.trim();
   const sid = document.getElementById('reg-sid')?.value.trim();
   const dept = document.getElementById('reg-dept')?.value.trim();
-  const pw = document.getElementById('reg-pw')?.value;
+  const pw = document.getElementById('reg-pw')?.value.trim();
 
   if(!name || !email || !sid || !pw) return toast('모든 필수 항목을 입력해주세요.', 'err');
 
   const newUser = {
-    name, email, password: pw, pw, student_id: sid, dept: dept || '미지정',
-    group_name: '미지정', rank: '학회원', status: 'pending', studies: []
+    name, 
+    email, 
+    password: String(pw), 
+    pw: String(pw), 
+    student_id: sid, 
+    dept: dept || '미지정',
+    group_name: '전체', 
+    project_group: '미지정', 
+    study_group: '스터디 없음',
+    rank: '학회원', 
+    status: '활동중', 
+    studies: []
   };
 
   try {
@@ -2152,6 +2162,29 @@ window.sendAttendanceWarning = async function() {
 
 
 /* --- admin_members.js --- */
+window.isUserInAttTarget = function(user, targetGroup) {
+  if (!targetGroup || targetGroup === '전체') return true;
+  if (!user) return false;
+
+  const userGroups = [
+    (user.group || '').trim(),
+    (user.project_group || '').trim(),
+    (user.study_group || '').trim()
+  ].filter(Boolean);
+
+  const targets = targetGroup.split(',').map(s => s.trim());
+
+  if (targets.includes('전체')) return true;
+
+  const hasDirectMatch = userGroups.some(g => targets.includes(g));
+  if (hasDirectMatch) return true;
+
+  const isProjMember = userGroups.some(g => ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(g));
+  if (targets.includes('프로젝트 전체') && isProjMember) return true;
+
+  return false;
+};
+
 window.renderDashboard = function() {
   const u = DB.currentUser;
   if (!u) return;
@@ -2175,29 +2208,35 @@ window.renderDashboard = function() {
   });
   const todaySessions = allSessions.filter(a => a.date === today);
   
-  // 본인 대상 세션 확인
-  const mySession = todaySessions.find(a => 
-    a.target_group === '전체' || 
-    a.target_group === u.group || 
-    (Array.isArray(u.studies) && u.studies.includes(a.target_group))
-  ) || todaySessions[0] || allSessions[0];
+  const activeSession = (DB.attendance || []).find(a => a.code && String(a.code).trim().length > 0) 
+                     || (DB.attendance || []).find(a => a.date === today);
 
-  if (mySession) {
-    const records = Array.isArray(mySession.records) ? mySession.records : [];
-    const myRec = records.find(r => window.isSameUser(r, u));
+  if (activeSession) {
+    const isTarget = window.isUserInAttTarget(u, activeSession.target_group);
 
-    if (myRec && myRec.status && myRec.status !== '미인증' && myRec.status !== '미출석') {
+    if (!isTarget) {
       if (aEl) {
-        aEl.textContent = myRec.status;
-        aEl.className = 'sv ' + (myRec.status === '출석' ? 'gr' : (myRec.status === '결석' ? 're' : 'ye'));
+        aEl.textContent = '-';
+        aEl.className = 'sv';
       }
-      if (aSub) aSub.textContent = `${mySession.title} · ${myRec.time || '인증 완료'}`;
+      if (aSub) aSub.textContent = `해당 없음 (${esc(activeSession.target_group || '타 그룹')})`;
     } else {
-      if (aEl) {
-        aEl.textContent = mySession.code ? '미인증' : '진행중';
-        aEl.className = 'sv ' + (mySession.code ? 're' : 'ye');
+      const records = Array.isArray(activeSession.records) ? activeSession.records : [];
+      const myRec = records.find(r => window.isSameUser(r, u));
+
+      if (myRec && myRec.status && myRec.status !== '미인증' && myRec.status !== '미출석') {
+        if (aEl) {
+          aEl.textContent = myRec.status;
+          aEl.className = 'sv ' + (myRec.status === '출석' ? 'gr' : (myRec.status === '지각' ? 'ye' : 're'));
+        }
+        if (aSub) aSub.textContent = myRec.time ? `${myRec.time} 인증` : '인증 완료';
+      } else {
+        if (aEl) {
+          aEl.textContent = activeSession.code ? '미인증' : '결석';
+          aEl.className = 'sv ' + (activeSession.code ? 'ye' : 're');
+        }
+        if (aSub) aSub.textContent = activeSession.code ? '출석 진행 중' : '출석 마감';
       }
-      if (aSub) aSub.textContent = mySession.code ? '출석 코드를 입력하세요' : '출석 세션 진행 중';
     }
   } else {
     if (aEl) {
