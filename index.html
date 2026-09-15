@@ -802,26 +802,51 @@ window.getAllTargetGroups = function() {
   return { groups, studies };
 };
 
-// DIF 표준 그룹 목록 정의 (1조~3조 및 프로젝트 전체 포함)
-window.DIF_GROUPS = [
-  '전체',
-  '프로젝트 전체',
-  '프로젝트 1조',
-  '프로젝트 2조',
-  '프로젝트 3조',
-  '스터디팀',
-  'SNS팀'
-];
+// 기본값 (DB에 아예 세팅된 적이 없을 때만 최초 1회 사용)
+window.DEFAULT_GROUPS = {
+  projects: ['프로젝트 전체', '프로젝트 1조', '프로젝트 2조', '프로젝트 3조'],
+  studies: ['스터디팀', 'SNS팀']
+};
 
-window.MEMBER_GROUPS = [
-  '1조',
-  '2조',
-  '3조',
-  '프로젝트 미참가',
-  '포토샵 스터디 기초',
-  '포토샵 스터디 심화',
-  '블렌더 스터디'
-];
+window.currentGroupSettings = null;
+
+// 그룹 설정 로드
+window.loadGroupSettings = async function() {
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'group_config')
+      .maybeSingle();
+
+    if (data && data.value) {
+      // 사용자가 삭제/수정한 최신 설정 유지
+      window.currentGroupSettings = data.value;
+    } else {
+      // DB에 설정이 아예 없을 때만 초기 기본값 저장
+      window.currentGroupSettings = window.DEFAULT_GROUPS;
+      await window.supabaseClient
+        .from('app_settings')
+        .upsert([{ key: 'group_config', value: window.DEFAULT_GROUPS }]);
+    }
+  } catch (err) {
+    console.error('loadGroupSettings error:', err);
+    if (!window.currentGroupSettings) {
+      window.currentGroupSettings = window.DEFAULT_GROUPS;
+    }
+  }
+  
+  // DIF_GROUPS 전역 변수 동기화
+  window.updateGlobalGroupList();
+};
+
+// DIF_GROUPS 배열 갱신
+window.updateGlobalGroupList = function() {
+  const p = window.currentGroupSettings?.projects || [];
+  const s = window.currentGroupSettings?.studies || [];
+  window.DIF_GROUPS = ['전체', ...p, ...s];
+  window.MEMBER_GROUPS = s;
+};
 
 window.renderMemberGroupChips = function(currentGroupStr = '') {
   const selectedList = (currentGroupStr || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -936,6 +961,9 @@ window.API = {
         window.supabaseClient.from('notifications').select('*'),
         window.supabaseClient.from('events').select('*')
       ]);
+
+      // 앱 그룹 설정 불러오기
+      if (window.loadGroupSettings) await window.loadGroupSettings();
 
       // Supabase 데이터를 로컬 구조체에 할당 (에러가 없는 경우에만)
       DB.users = (users || []).map(u => ({ ...u, studentId: u.student_id, group: u.group_name }));
@@ -2354,7 +2382,7 @@ window.openUserEditModal = function(userId) {
   if (!targetUser) return toast('해당 학회원 정보를 찾을 수 없습니다.', 'err');
 
   const ranks = window.RANKS || ['학회장', '부학회장', '총무', '스터디팀', '프로젝트팀', 'SNS팀', '학회원'];
-  const projectOptions = ['미지정', '프로젝트 전체', '프로젝트 1조', '프로젝트 2조', '프로젝트 3조'];
+  const projectOptions = ['미지정', '프로젝트 전체', ...(window.currentGroupSettings?.projects || ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조']).filter(p => p !== '프로젝트 전체')];
 
   const curProj = targetUser.project_group || targetUser.group || '미지정';
   const curStudy = targetUser.study_group || '스터디 없음';
