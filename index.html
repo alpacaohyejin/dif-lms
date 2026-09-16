@@ -509,7 +509,10 @@ window.addEventListener('unhandledrejection', function(e) {
             </select>
             <select class="fc" style="max-width:150px;" onchange="filterM('study',this.value)">
               <option value="">전체 스터디</option>
-              <option>프로젝트</option><option>포토샵 기초</option><option>포토샵 심화+AI</option><option>블렌더 스터디</option><option value="none">스터디 미참가</option>
+              <option>포토샵 기초반</option>
+              <option>포토샵 심화반</option>
+              <option>블렌더 스터디</option>
+              <option value="none">스터디 미참가</option>
             </select>
             <select class="fc" style="max-width:130px;" onchange="filterM('rank',this.value)">
               <option value="">전체 직급</option>
@@ -2480,7 +2483,13 @@ window.renderMembers = function() {
   }
   if (f.rank) arr = arr.filter(x => x.rank === f.rank);
   if (f.status) arr = arr.filter(x => x.status === f.status);
-  if (f.study) arr = arr.filter(x => (x.studies||[]).includes(f.study));
+  if (f.study) {
+    arr = arr.filter(x => {
+      if (f.study === 'none') return !x.study_group || x.study_group === '스터디 없음';
+      const st = (x.study_group || '').split(',').map(s => s.trim()).filter(Boolean);
+      return st.includes(f.study);
+    });
+  }
   
   const cnt = document.getElementById('member-cnt');
   if(cnt) cnt.textContent = arr.length + '명';
