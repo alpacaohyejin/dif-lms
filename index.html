@@ -2203,6 +2203,9 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
     }
   });
 
+  // 이름순 정렬
+  targetUsers.sort((u1, u2) => String(u1.name).localeCompare(String(u2.name), 'ko'));
+
   // 각 유저별 출석 상태 매핑
   const trsHtml = targetUsers.length === 0 
     ? `<tr><td colspan="6" style="text-align:center; padding:24px; color:#888;">해당 스터디/조에 배정된 학회원이 없습니다.</td></tr>`
@@ -2211,37 +2214,42 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
     const userRecord = records.find(r => window.isSameUserRecord(r, u));
     
     // 상태 판정
-    let status = userRecord ? (userRecord.status || '미인증') : '미인증';
-    if (status === '미출석') status = '미인증';
-    const checkTime = userRecord ? (userRecord.time || userRecord.timestamp || '-') : '-';
+    let status = userRecord ? (userRecord.status || '결석') : '결석';
+    if (status === '미출석' || status === '미인증') status = '결석';
+    const checkTime = userRecord ? (userRecord.time || userRecord.timestamp || '인증됨') : '-';
     
-    let badgeClass = 'b-re';
-    if (status === '출석') badgeClass = 'b-gr';
-    else if (status === '지각') badgeClass = 'b-ye';
-    else if (status === '사유' || status === '공결') badgeClass = 'b-bl';
-
     // 통계 누적
     if (status === '출석') present++;
     else if (status === '지각') late++;
     else if (status === '사유' || status === '공결') excused++;
     else absent++;
 
+    // 학번 및 소속 안전 추출
+    const displaySid = u.sid || u.student_id || (u.email ? u.email.split('@')[0] : '-');
+    const displayDept = u.study_group || u.project_group || u.group || a.target_group || '전체';
+
+    let badgeBg = '#fce8e6', badgeColor = '#c5221f';
+    if (status === '출석') { badgeBg = '#e6f4ea'; badgeColor = '#137333'; }
+    else if (status === '지각') { badgeBg = '#fef7e0'; badgeColor = '#b06000'; }
+    else if (status === '사유' || status === '공결') { badgeBg = '#e8f0fe'; badgeColor = '#1a73e8'; }
+
     return `
-      <tr style="border-bottom: 1px solid var(--gray-100);">
-        <td style="padding: 10px 12px; font-weight: 500;">${esc(u.name)}</td>
-        <td style="padding: 10px 12px; color: var(--gray-500); font-size: 12px;">${esc(u.sid || u.student_id || '-')}</td>
-        <td style="padding: 10px 12px; font-size: 12px;">${esc(u.project_group || u.study_group || u.group || '-')}</td>
-        <td style="padding: 10px 12px; text-align: center;">
-          <span class="badge ${badgeClass}">${status}</span>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 12px; font-weight: 600;">${esc(u.name)}</td>
+        <td style="padding: 12px; color: #666; font-size: 13px;">${esc(displaySid)}</td>
+        <td style="padding: 12px; font-size: 13px; color: #555;">${esc(displayDept)}</td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="display:inline-block; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; background:${badgeBg}; color:${badgeColor};">
+            ${status}
+          </span>
         </td>
-        <td style="padding: 10px 12px; font-size: 12px; color: var(--gray-400); text-align: center;">${checkTime}</td>
-        <td style="padding: 10px 12px; text-align: center;">
-          <select class="fc" style="padding:2px 4px; font-size:11px; width:auto;" onchange="updateMemberAttStatus('${a.id}', '${u.id}', this.value)">
+        <td style="padding: 12px; font-size: 13px; color: #888; text-align: center;">${checkTime}</td>
+        <td style="padding: 12px; text-align: center;">
+          <select onchange="window.updateMemberAttStatus('${a.id}', '${u.id || u.sid || u.name}', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #ddd; font-size:12px; cursor:pointer;">
             <option value="출석" ${status === '출석' ? 'selected' : ''}>출석</option>
             <option value="지각" ${status === '지각' ? 'selected' : ''}>지각</option>
             <option value="사유" ${status === '사유' || status === '공결' ? 'selected' : ''}>사유</option>
             <option value="결석" ${status === '결석' ? 'selected' : ''}>결석</option>
-            <option value="미인증" ${status === '미인증' ? 'selected' : ''}>미인증</option>
           </select>
         </td>
       </tr>
