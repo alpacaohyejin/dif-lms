@@ -2464,7 +2464,22 @@ window.renderMembers = function() {
   const f = DB.mFilter || { name: '', group: '', rank: '', status: '', study: '' };
   
   if (f.name) arr = arr.filter(x => x.name.includes(f.name));
-  if (f.group) arr = arr.filter(x => x.group === f.group);
+  if (f.group) {
+    arr = arr.filter(u => {
+      // 1. 프로젝트 조 매칭
+      const proj = (u.project_group || u.group || '').trim();
+      if (proj === f.group) return true;
+      if (f.group === '프로젝트 전체' && ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(proj)) {
+        return true;
+      }
+
+      // 2. 다중 스터디 매칭 (쉼표 분리)
+      const studies = (u.study_group || '').split(',').map(s => s.trim()).filter(Boolean);
+      if (studies.includes(f.group)) return true;
+
+      return false;
+    });
+  }
   if (f.rank) arr = arr.filter(x => x.rank === f.rank);
   if (f.status) arr = arr.filter(x => x.status === f.status);
   if (f.study) arr = arr.filter(x => (x.studies||[]).includes(f.study));
