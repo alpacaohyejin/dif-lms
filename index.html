@@ -2563,18 +2563,62 @@ window.renderDashboard = function() {
     }
   }
 
-  // 4. 과제 및 스터디 위젯
+  // 4. 과제 위젯 카운트 및 마감 임박 과제 목록 렌더링
   const now = new Date();
+
+  // 본인이 대상인 과제들만 추림
+  const myAssignments = (DB.assignments || []).filter(a => window.isUserInAssignmentTarget(u, a.group));
+
   const ong = document.getElementById('s-ongoing');
   if (ong) {
-    ong.textContent = (DB.assignments || []).filter(a => new Date(a.deadline).setHours(23, 59, 59, 999) >= now).length;
+    ong.textContent = myAssignments.filter(a => new Date(a.deadline).setHours(23, 59, 59, 999) >= now).length;
   }
+  
   const ovd = document.getElementById('s-overdue');
   if (ovd) {
-    ovd.textContent = (DB.assignments || []).filter(a => 
+    ovd.textContent = myAssignments.filter(a => 
       (new Date(a.deadline).setHours(23, 59, 59, 999) < now) && 
-      !(a.submissions || []).some(s => window.isSameUser(s, u))
+      !(a.submissions || []).some(s => window.isSameUserRecord(s, u))
     ).length;
+  }
+
+  // 4.5. 홈 과제 목록 위젯 (dash-asg)
+  const dAsg = document.getElementById('dash-asg');
+  if (dAsg) {
+    // 7일 이내 마감 과제
+    const activeAsgs = myAssignments.filter(a => {
+      const msLeft = new Date(a.deadline).setHours(23, 59, 59, 999) - now.getTime();
+      return msLeft >= 0 && msLeft <= 7 * 24 * 60 * 60 * 1000;
+    }).slice(0, 5);
+
+    if (activeAsgs.length === 0) {
+      dAsg.innerHTML = `
+        <div style="text-align:center; padding:1.5rem; color:var(--gray-400); font-size:13px;">
+          7일 이내 마감 예정인 과제가 없습니다.
+        </div>`;
+    } else {
+      dAsg.innerHTML = activeAsgs.map(a => {
+        const sub = (a.submissions || []).find(s => window.isSameUserRecord(s, u));
+        const statusText = sub ? '제출 완료' : '미제출';
+        const statusClass = sub ? 'b-gr' : 'b-re';
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid var(--gray-100);">
+            <div>
+              <div style="font-weight:600; font-size:13px; color:var(--gray-800); display:flex; align-items:center; gap:6px;">
+                ${esc(a.title)}
+                <span class="badge b-gy" style="font-size:11px; font-weight:normal;">${esc(a.group || '전체')}</span>
+              </div>
+              <div style="font-size:11px; color:var(--gray-400); margin-top:2px;">
+                마감: ${fmt(a.deadline)}
+              </div>
+            </div>
+            <div>
+              <span class="badge ${statusClass}">${statusText}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   // 5. 스터디 및 프로젝트 참가 현황 (dash-teams) - 유실 방지 복원
