@@ -1127,14 +1127,24 @@ window.handleLogin = async function(e) {
     if (!window.supabaseClient) throw new Error("Supabase client not initialized.");
 
     // 2. Supabase DB에서 해당 사용자 실시간 직접 조회
-    const { data: users, error } = await window.supabaseClient
+    let { data: users, error } = await window.supabaseClient
       .from('users')
       .select('*')
-      .or(`email.eq.${inputId},student_id.eq.${inputId}`);
+      .or(`email.eq.${inputId},student_id.eq.${inputId},sid.eq.${inputId}`);
 
-    if (error) throw error;
+    // or 문법 실패 시 대비 fallback: 전체를 가져오거나 단독 재조회
+    if (error || !users || users.length === 0) {
+      const fallbackResult = await window.supabaseClient.from('users').select('*');
+      if (fallbackResult.data) {
+        users = fallbackResult.data.filter(u => {
+          const uId = String(u.email || u.sid || u.student_id || '').trim().replace(/\s+/g, '');
+          return uId === inputId;
+        });
+      }
+    }
 
     if (!users || users.length === 0) {
+      console.warn('사용자 조회 실패. 입력 ID/학번:', inputId);
       return toast('등록되지 않은 아이디/학번입니다. 회원가입을 먼저 진행해주세요.', 'err');
     }
 
@@ -2292,28 +2302,62 @@ window.renderDashboard = function() {
   // 3. 최근 출석 목록 위젯 (dash-att)
   const datt = document.getElementById('dash-att');
   if (datt) {
-    const historyList = allSessions.slice(0, 5);
-    if (!historyList.length) {
-      datt.innerHTML = '<div class="empty" style="padding:1rem;">출석 기록이 없습니다.</div>';
+    const isOfficer = typeof canMng === 'function' ? canMng(u) : false;
+
+    // 본인이 해당되는 출석 세션만 필터링
+    const mySessions = allSessions.filter(session => {
+      return window.isUserInAttTarget ? window.isUserInAttTarget(u, session.target_group) : true;
+    });
+
+    const recentTargetSessions = mySessions.slice(0, 5);
+
+    if (recentTargetSessions.length === 0) {
+      datt.innerHTML = `
+        <div style="text-align:center; padding:1.5rem; color:var(--gray-400); font-size:13px;">
+          해당되는 최근 출석 기록이 없습니다.
+        </div>`;
     } else {
-      datt.innerHTML = historyList.map(a => {
-        const records = Array.isArray(a.records) ? a.records : [];
-        const r = records.find(x => window.isSameUser(x, u));
-        const st = r ? r.status : '미인증';
-        const tm = r && r.time ? `<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${r.time} 인증</div>` : '';
-        const badgeCls = st === '출석' ? 'b-gr' : (st === '지각' ? 'b-ye' : 'b-re');
+      datt.innerHTML = recentTargetSessions.map(session => {
+        const records = Array.isArray(session.records) ? session.records : [];
+        const myRec = records.find(r => window.isSameUser(r, u));
+
+        let statusText = '결석';
+        let statusClass = 'b-re';
+        let timeText = '-';
+
+        if (myRec) {
+          statusText = myRec.status || '출석';
+          timeText = myRec.time || '인증 완료';
+          if (statusText === '출석') statusClass = 'b-gr';
+          else if (statusText === '지각') statusClass = 'b-ye';
+          else if (statusText === '사유' || statusText === '공결') statusClass = 'b-bl';
+          else statusClass = 'b-re';
+        } else {
+          if (session.code && String(session.code).trim().length > 0) {
+            statusText = '진행 중';
+            statusClass = 'b-bl';
+          } else {
+            statusText = '결석';
+            statusClass = 'b-re';
+          }
+        }
 
         return `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:.75rem .5rem; border-bottom:1px solid var(--gray-100);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid var(--gray-100);">
             <div>
-              <div style="font-size:13px; font-weight:600;">${esc(a.title)}</div>
-              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">${fmt(a.date)} · ${esc(a.target_group || '전체')}</div>
+              <div style="font-weight:600; font-size:13px; color:var(--gray-800); display:flex; align-items:center; gap:6px;">
+                ${esc(session.title)}
+                <span class="badge b-gy" style="font-size:11px; font-weight:normal;">${esc(session.target_group || '전체')}</span>
+              </div>
+              <div style="font-size:11px; color:var(--gray-400); margin-top:2px;">
+                ${fmt(session.date)} ${timeText !== '-' ? `· ${timeText}` : ''}
+              </div>
             </div>
-            <div style="text-align:right;">
-              <span class="badge ${badgeCls}">${st}</span>
-              ${tm}
+            <div>
+              <span class="badge ${statusClass}">${statusText}</span>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join('');
     }
   }
