@@ -1476,7 +1476,7 @@ window.renderAssignments = function(tab = 'ongoing') {
   };
   
   let asgns = (DB?.assignments||[]).filter(a => {
-    const sub = (a.submissions||[]).find(s => String(s.userId) === String(u.id) || String(s.uid) === String(u.id));
+    const sub = (a.submissions||[]).find(s => window.isSameUserRecord(s, u));
     const isPast = window.isPastDeadline(a.deadline);
     if(tab === 'ongoing') return !isPast && !sub;
     if(tab === 'submitted') return !!sub;
@@ -1493,7 +1493,7 @@ window.renderAssignments = function(tab = 'ongoing') {
   }
   
   el.innerHTML = asgns.map(a => {
-    const sub = (a.submissions||[]).find(s => String(s.userId) === String(u.id) || String(s.uid) === String(u.id));
+    const sub = (a.submissions||[]).find(s => window.isSameUserRecord(s, u));
     let badge = '', bCls = '';
     const isPast = window.isPastDeadline(a.deadline);
     
@@ -1611,7 +1611,7 @@ window.viewAsgSubmissions = function(id) {
     <table class="tb" style="margin:0;"><thead><tr><th>조/소속</th><th>이름</th><th>상태</th><th>제출 시각</th></tr></thead><tbody>`;
   
   targetUsers.forEach(u => {
-    const s = (a.submissions||[]).find(x => String(x.userId) === String(u.id) || String(x.uid) === String(u.id));
+    const s = (a.submissions||[]).find(x => window.isSameUserRecord(x, u));
     const submittedAt = s && (s.submittedAt || s.date) ? new Date(s.submittedAt || s.date).toLocaleString() : '—';
     h += `<tr>
       <td>${esc(u.group)}</td>
@@ -1829,10 +1829,38 @@ window.getAsgStats = function(a) {
   let u = (DB.users||[]).filter(x => x.status === 'active');
   if(a.group !== '전체') u = u.filter(x => x.group === a.group);
   let sub = 0;
-  u.forEach(x => { if((a.submissions||[]).find(s => String(s.userId) === String(x.id) || String(s.uid) === String(x.id))) sub++; });
+  u.forEach(x => { if((a.submissions||[]).find(s => window.isSameUserRecord(s, x))) sub++; });
   return { sub, unsub: u.length - sub };
 };
 
+// 출석 기록(r)과 회원 객체(u)가 동일 인물인지 정밀 판별하는 함수
+window.isSameUserRecord = function(r, u) {
+  if (!r || !u) return false;
+  
+  // 1. Supabase PK id 비교 (문자열/숫자 타입 무시)
+  if (r.uid !== undefined && u.id !== undefined && String(r.uid).trim() === String(u.id).trim()) {
+    return true;
+  }
+  if (r.userId !== undefined && u.id !== undefined && String(r.userId).trim() === String(u.id).trim()) {
+    return true;
+  }
+  
+  // 2. 학번/이메일 (sid, student_id) 비교
+  const recSid = String(r.sid || r.uid || '').trim().replace(/\s+/g, '').toLowerCase();
+  const userSid = String(u.sid || u.student_id || '').trim().replace(/\s+/g, '').toLowerCase();
+  if (recSid && userSid && recSid === userSid) {
+    return true;
+  }
+
+  // 3. 이름(name) 비교 (동명이인이 없을 경우 최후의 fallback)
+  const recName = String(r.name || r.userName || '').trim();
+  const userName = String(u.name || '').trim();
+  if (recName && userName && recName === userName) {
+    return true;
+  }
+
+  return false;
+};
 
 /* --- attendance.js --- */
 // 출석 세션 생성 모달의 대상 선택지 리스트
@@ -1898,7 +1926,7 @@ window.renderAttendance = function() {
   const mp = document.getElementById('att-member-panel');
   if (mp) {
     const targetSession = activeSession || todaySession;
-    const myRec = targetSession ? (targetSession.records || []).find(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)) : null;
+    const myRec = targetSession ? (targetSession.records || []).find(r => window.isSameUserRecord(r, u)) : null;
     const isTarget = targetSession ? window.isUserInAttTarget(u, targetSession.target_group) : true;
 
     if (!activeSession) {
@@ -2132,44 +2160,58 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
   }
 
   let present = 0, late = 0, absent = 0, excused = 0;
-  const records = Array.isArray(a.records) ? a.records : [];
+  
+  // records 데이터 안전 추출 (배열 보장)
+  let records = [];
+  try {
+    records = Array.isArray(a.records) 
+      ? a.records 
+      : (typeof a.records === 'string' ? JSON.parse(a.records) : []);
+  } catch (e) {
+    records = [];
+  }
 
+  // 각 유저별 출석 상태 매핑
   const trs = targetUsers.map(u => {
-    const r = records.find(x => String(x.uid) === String(u.id) || String(x.userId) === String(u.id));
-    let st = '미인증';
-    let timeStr = '-';
-    let note = '';
+    // 보강된 헬퍼 함수로 기록 검색
+    const userRecord = records.find(r => window.isSameUserRecord(r, u));
+    
+    // 상태 판정
+    let status = userRecord ? (userRecord.status || '미인증') : '미인증';
+    if (status === '미출석') status = '미인증';
+    const checkTime = userRecord ? (userRecord.time || userRecord.timestamp || '-') : '-';
+    
+    let badgeClass = 'b-re';
+    if (status === '출석') badgeClass = 'b-gr';
+    else if (status === '지각') badgeClass = 'b-ye';
+    else if (status === '사유' || status === '공결') badgeClass = 'b-bl';
 
-    if (r) {
-      st = r.status || '미인증';
-      if (st === '미출석') st = '미인증';
-      timeStr = r.time || '-';
-      note = r.note || r.excuse || '';
-    }
-
-    if (st === '출석') present++;
-    else if (st === '지각') late++;
-    else if (st === '사유' || st === '공결') excused++;
+    // 통계 누적
+    if (status === '출석') present++;
+    else if (status === '지각') late++;
+    else if (status === '사유' || status === '공결') excused++;
     else absent++;
 
-    const badgeCls = st === '출석' ? 'b-gr' : (st === '지각' ? 'b-ye' : (st === '사유' || st === '공결' ? 'b-bl' : 'b-re'));
-
     return `
-      <tr>
-        <td><strong>${esc(u.name)}</strong></td>
-        <td><span class="badge b-gy" style="font-size:11px;">${esc(u.group || '—')}</span></td>
-        <td><span class="badge ${badgeCls}">${st}</span></td>
-        <td class="tm" style="font-size:12px; font-family:monospace;">${timeStr}</td>
-        <td>
+      <tr style="border-bottom: 1px solid var(--gray-100);">
+        <td style="padding: 10px 12px; font-weight: 500;">${esc(u.name)}</td>
+        <td style="padding: 10px 12px; color: var(--gray-500); font-size: 12px;">${esc(u.sid || u.student_id || '-')}</td>
+        <td style="padding: 10px 12px; font-size: 12px;">${esc(u.project_group || u.study_group || u.group || '-')}</td>
+        <td style="padding: 10px 12px; text-align: center;">
+          <span class="badge ${badgeClass}">${status}</span>
+        </td>
+        <td style="padding: 10px 12px; font-size: 12px; color: var(--gray-400); text-align: center;">${checkTime}</td>
+        <td style="padding: 10px 12px; text-align: center;">
           <select class="fc" style="padding:2px 4px; font-size:11px; width:auto;" onchange="updateMemberAttStatus('${a.id}', '${u.id}', this.value)">
-            <option value="출석" ${st === '출석' ? 'selected' : ''}>출석</option>
-            <option value="지각" ${st === '지각' ? 'selected' : ''}>지각</option>
-            <option value="사유" ${st === '사유' ? 'selected' : ''}>사유</option>
-            <option value="결석" ${st === '결석' ? 'selected' : ''}>결석</option>
-            <option value="미인증" ${st === '미인증' || st === '미출석' ? 'selected' : ''}>미인증</option>
+            <option value="출석" ${status === '출석' ? 'selected' : ''}>출석</option>
+            <option value="지각" ${status === '지각' ? 'selected' : ''}>지각</option>
+            <option value="사유" ${status === '사유' || status === '공결' ? 'selected' : ''}>사유</option>
+            <option value="결석" ${status === '결석' ? 'selected' : ''}>결석</option>
+            <option value="미인증" ${status === '미인증' ? 'selected' : ''}>미인증</option>
           </select>
         </td>
-      </tr>`;
+      </tr>
+    `;
   }).join('');
 
   const modalContent = `
@@ -2188,11 +2230,12 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
         <table class="tb" style="margin:0; width:100%;">
           <thead>
             <tr>
-              <th>이름</th>
-              <th>소속</th>
-              <th>현재 상태</th>
-              <th>인증 시간</th>
-              <th>수동 변경</th>
+              <th style="padding: 10px 12px; text-align:left;">이름</th>
+              <th style="padding: 10px 12px; text-align:left;">학번</th>
+              <th style="padding: 10px 12px; text-align:left;">소속</th>
+              <th style="padding: 10px 12px; text-align:center;">상태</th>
+              <th style="padding: 10px 12px; text-align:center;">확인 시각</th>
+              <th style="padding: 10px 12px; text-align:center;">수동 변경</th>
             </tr>
           </thead>
           <tbody id="att-modal-tbody">
@@ -2249,7 +2292,7 @@ window.sendAttendanceWarning = async function() {
   users.forEach(u => {
     let penalty = 0;
     attHistory.forEach(att => {
-      const r = (att.records || []).find(x => String(x.uid) === String(u.id));
+      const r = (att.records || []).find(x => window.isSameUserRecord(x, u));
       if (r && (r.status === '지각' || r.status === '결석' || r.status === '미인증' || r.status === '미출석')) penalty++;
     });
     if (penalty >= 3) targets.push({ ...u, penalty });
