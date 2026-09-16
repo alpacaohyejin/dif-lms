@@ -2172,7 +2172,7 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
   );
 
   // 3. 대상 회원 추출: 세션 대상이거나, 이미 기록(records)에 있는 유저
-  const allUsers = (DB.users || []).filter(u => u.status === 'active');
+  const allUsers = DB.users || [];
   const targetUsers = allUsers.filter(u => {
     const uSid = String(u.sid || u.student_id || '').trim().toLowerCase();
     const uId = String(u.id || '').trim().toLowerCase();
@@ -2225,7 +2225,7 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
     else absent++;
 
     // 학번 및 소속 안전 추출
-    const displaySid = u.sid || u.student_id || (u.email ? u.email.split('@')[0] : '-');
+    const displaySid = u.sid || u.student_id || '-';
     const displayDept = u.study_group || u.project_group || u.group || a.target_group || '전체';
 
     let badgeBg = '#fce8e6', badgeColor = '#c5221f';
