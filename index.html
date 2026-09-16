@@ -1162,15 +1162,11 @@ window.handleLogin = async function(e) {
     // 3. 비밀번호 검증 (문자열 변환 후 비교)
     const dbPw = String(matchedUser.password ?? '').trim();
     if (dbPw !== inputPw) {
-      console.warn('비밀번호 불일치 디버그:', { 입력: inputPw, DB: dbPw });
-      
-      // 관리자 및 사용자 디버깅용 팝업 강제 노출
-      alert(
-        `[비밀번호 불일치 확인]\n\n` +
-        `• 입력한 비밀번호: "${inputPw}" (글자수: ${inputPw.length})\n` +
-        `• DB 저장 비밀번호: "${dbPw}" (글자수: ${dbPw.length})\n\n` +
-        `DB에 저장된 글자와 입력창에 넣은 글자가 다릅니다. 위 DB 저장 비밀번호를 확인 후 그대로 입력해주세요.`
-      );
+      if (typeof toast === 'function') {
+        toast('비밀번호가 일치하지 않습니다.', 'err');
+      } else {
+        alert('비밀번호가 일치하지 않습니다.');
+      }
       return;
     }
 
@@ -2550,6 +2546,7 @@ window.saveUserEdit = async function(userId) {
   const status = document.getElementById('edit-user-status')?.value || '활동중';
 
   try {
+    // updatePayload 생성 시 비밀번호 필드는 건드리지 않음
     const updatePayload = {
       name,
       sid,
@@ -2559,6 +2556,7 @@ window.saveUserEdit = async function(userId) {
       study_group,
       group: project_group !== '미지정' ? project_group : study_group, // 하위 호환용
       status
+      // password는 절대 덮어씌우지 않음!
     };
 
     const { error } = await window.supabaseClient
