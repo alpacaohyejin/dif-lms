@@ -1895,7 +1895,7 @@ window.renderAttendance = function() {
   if (mp) {
     const targetSession = activeSession || todaySession;
     const myRec = targetSession ? (targetSession.records || []).find(r => String(r.uid) === String(u.id) || String(r.userId) === String(u.id)) : null;
-    const isTarget = targetSession ? (targetSession.target_group === '전체' || targetSession.target_group === u.group || (Array.isArray(u.studies) && u.studies.includes(targetSession.target_group))) : true;
+    const isTarget = targetSession ? window.isUserInAttTarget(u, targetSession.target_group) : true;
 
     if (!activeSession) {
       mp.innerHTML = `<div class="card" style="padding:1.5rem;text-align:center;color:var(--gray-500);margin-bottom:1rem;">현재 진행 중인 출석체크가 없거나 마감되었습니다.</div>`;
@@ -2124,9 +2124,7 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
 
   let targetUsers = (DB.users || []).filter(u => u.status === 'active');
   if (a.target_group && a.target_group !== '전체') {
-    targetUsers = targetUsers.filter(u => 
-      u.group === a.target_group || (Array.isArray(u.studies) && u.studies.includes(a.target_group))
-    );
+    targetUsers = targetUsers.filter(u => window.isUserInAttTarget(u, a.target_group));
   }
 
   let present = 0, late = 0, absent = 0, excused = 0;
@@ -2279,21 +2277,21 @@ window.isUserInAttTarget = function(user, targetGroup) {
   if (!targetGroup || targetGroup === '전체') return true;
   if (!user) return false;
 
-  const targetList = targetGroup.split(',').map(s => s.trim());
-  if (targetList.includes('전체')) return true;
+  // 세션의 대상 목록 (예: "포토샵 기초반, 블렌더 스터디" -> ["포토샵 기초반", "블렌더 스터디"])
+  const targets = targetGroup.split(',').map(s => s.trim()).filter(Boolean);
+  if (targets.includes('전체')) return true;
 
-  // 유저의 프로젝트 조와 스터디 목록 파싱 (쉼표로 구분된 다중 스터디 분리)
+  // 유저의 소속 정보 파싱
   const userStudies = (user.study_group || '').split(',').map(s => s.trim()).filter(Boolean);
-  const userProject = (user.project_group || '').trim();
-  const userLegacyGroup = (user.group || '').trim();
+  const userProj = (user.project_group || user.group || '').trim();
 
-  // 1. 스터디 매칭 확인 (사용자가 참여한 스터디 중 하나라도 타깃에 포함되어 있는지)
-  const isStudyMatched = userStudies.some(s => targetList.includes(s));
-  if (isStudyMatched) return true;
+  // 1. 스터디 매칭 (유저의 참여 스터디 중 하나라도 출석 대상에 포함되어 있는가)
+  const hasMatchingStudy = userStudies.some(study => targets.includes(study));
+  if (hasMatchingStudy) return true;
 
   // 2. 프로젝트 조 매칭
-  if (targetList.includes(userProject) || targetList.includes(userLegacyGroup)) return true;
-  if (targetList.includes('프로젝트 전체') && ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(userProject)) {
+  if (targets.includes(userProj)) return true;
+  if (targets.includes('프로젝트 전체') && ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(userProj)) {
     return true;
   }
 
