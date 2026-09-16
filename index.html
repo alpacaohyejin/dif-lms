@@ -1162,9 +1162,15 @@ window.handleLogin = async function(e) {
     // 3. 비밀번호 검증 (문자열 변환 후 비교)
     const dbPw = String(matchedUser.password ?? '').trim();
     if (dbPw !== inputPw) {
-      console.warn('비밀번호 불일치:', { 입력: inputPw, DB: dbPw });
-      if (typeof toast === 'function') toast('비밀번호가 일치하지 않습니다.', 'err');
-      else alert('비밀번호가 일치하지 않습니다.');
+      console.warn('비밀번호 불일치 디버그:', { 입력: inputPw, DB: dbPw });
+      
+      // 관리자 및 사용자 디버깅용 팝업 강제 노출
+      alert(
+        `[비밀번호 불일치 확인]\n\n` +
+        `• 입력한 비밀번호: "${inputPw}" (글자수: ${inputPw.length})\n` +
+        `• DB 저장 비밀번호: "${dbPw}" (글자수: ${dbPw.length})\n\n` +
+        `DB에 저장된 글자와 입력창에 넣은 글자가 다릅니다. 위 DB 저장 비밀번호를 확인 후 그대로 입력해주세요.`
+      );
       return;
     }
 
@@ -1219,6 +1225,17 @@ window.handleLogin = async function(e) {
   }
 };
 window.doLogin = window.handleLogin;
+
+// animalese 관련 호출 래퍼 또는 전역 방어
+if (window.Animalese || typeof processFallback === 'function' || true) {
+  const originalPlay = window.playVoice || window.speakAnimalese;
+  if (typeof originalPlay === 'function') {
+    window.playVoice = function(text, ...args) {
+      if (!text || typeof text !== 'string') return;
+      return originalPlay(text, ...args);
+    };
+  }
+}
 
 window.doRegister = async function() {
   const name = document.getElementById('reg-name')?.value.trim();
