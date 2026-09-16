@@ -802,6 +802,9 @@ window.getAllTargetGroups = function() {
   return { groups, studies };
 };
 
+// 스터디 마스터 목록 상수 정의
+window.STUDY_OPTIONS = ['포토샵 기초반', '포토샵 심화반', '블렌더 스터디'];
+
 // 기본값 (DB에 아예 세팅된 적이 없을 때만 최초 1회 사용)
 window.DEFAULT_GROUPS = {
   projects: ['프로젝트 전체', '프로젝트 1조', '프로젝트 2조', '프로젝트 3조'],
@@ -1828,6 +1831,28 @@ window.getAsgStats = function(a) {
 
 
 /* --- attendance.js --- */
+// 출석 세션 생성 모달의 대상 선택지 리스트
+window.getAttendanceTargetOptions = function() {
+  const projectList = window.currentGroupSettings?.projects || ['프로젝트 전체', '프로젝트 1조', '프로젝트 2조', '프로젝트 3조'];
+  return ['전체', ...projectList, ...(window.STUDY_OPTIONS || [])];
+};
+
+// 모달 내 다중 옵션 렌더링
+window.renderAttendanceTargetCheckboxes = function(currentTargetsStr = '전체') {
+  const options = window.getAttendanceTargetOptions();
+  const selected = currentTargetsStr.split(',').map(s => s.trim());
+  
+  return options.map(opt => {
+    const isChecked = selected.includes(opt) || (selected.includes('전체') && opt === '전체');
+    return `
+      <label style="display:inline-flex; align-items:center; gap:4px; margin-right:8px; font-size:12px; cursor:pointer; padding:2px 0;">
+        <input type="checkbox" name="att-target-item" value="${esc(opt)}" ${isChecked ? 'checked' : ''}>
+        ${esc(opt)}
+      </label>
+    `;
+  }).join('');
+};
+
 window.renderAttendance = function() {
   if (!DB || !DB.currentUser) return;
   const u = DB.currentUser;
@@ -1848,9 +1873,9 @@ window.renderAttendance = function() {
           <div class="c-hd"><div class="c-title" style="display:flex;align-items:center;gap:6px;"><i data-lucide="settings" style="width:16px;height:16px;"></i> 출석 코드 관리 (운영진)</div></div>
           <div style="display:flex;gap:7px;margin-top:.75rem;align-items:center;flex-wrap:wrap;">
             <input id="setup-title" class="fc" style="max-width:160px;" placeholder="세미나/스터디명" value="${todaySession ? esc(todaySession.title) : '정기 세미나'}">
-            <select id="setup-target" class="fc" style="max-width:180px;">
-              ${window.renderGroupOptionsHtml(window.attSetupState?.targetGroup || '전체')}
-            </select>
+            <div style="display:flex; flex-wrap:wrap; align-items:center; border:1px solid var(--gray-200); padding:4px 8px; border-radius:var(--r-md); background:var(--bg); flex:1; min-width:300px;">
+              ${window.renderAttendanceTargetCheckboxes(window.attSetupState?.targetGroup || '전체')}
+            </div>
             <input id="att-code-inp" class="fc" style="max-width:120px;text-transform:uppercase;" placeholder="코드 입력" value="${activeSession ? esc(activeSession.code) : ''}">
             <button class="btn btn-p" onclick="setTodayCode()">코드 발급</button>
             ${activeSession ? `<button class="btn btn-d" onclick="closeAttendanceSession('${activeSession.id}')">출석체크 마감(중지)</button>` : ''}
@@ -1961,16 +1986,15 @@ window.setTodayCode = async function() {
   const rawCode = codeInp ? codeInp.value : '';
   const code = rawCode.replace(/\s+/g, '').toUpperCase(); // 모든 공백 제거 후 대문자 변환
   const title = (titleInp && titleInp.value.trim()) || '정기 세미나';
-  const targetGroup = targetSelect ? targetSelect.value : '전체';
+  const checkedTargets = Array.from(document.querySelectorAll('input[name="att-target-item"]:checked')).map(el => el.value.trim());
+  const targetGroup = checkedTargets.length > 0 ? checkedTargets.join(', ') : '전체';
 
   if (!code) return toast('출석 코드를 입력해주세요.', 'err');
 
   const today = new Date().toISOString().split('T')[0];
   let targetUsers = (DB.users || []).filter(u => u.status === 'active');
   if (targetGroup !== '전체') {
-    targetUsers = targetUsers.filter(u => 
-      u.group === targetGroup || (Array.isArray(u.studies) && u.studies.includes(targetGroup))
-    );
+    targetUsers = targetUsers.filter(u => window.isUserInAttTarget(u, targetGroup));
   }
 
   const initialRecords = targetUsers.map(u => ({
@@ -2255,21 +2279,23 @@ window.isUserInAttTarget = function(user, targetGroup) {
   if (!targetGroup || targetGroup === '전체') return true;
   if (!user) return false;
 
-  const userGroups = [
-    (user.group || '').trim(),
-    (user.project_group || '').trim(),
-    (user.study_group || '').trim()
-  ].filter(Boolean);
+  const targetList = targetGroup.split(',').map(s => s.trim());
+  if (targetList.includes('전체')) return true;
 
-  const targets = targetGroup.split(',').map(s => s.trim());
+  // 유저의 프로젝트 조와 스터디 목록 파싱 (쉼표로 구분된 다중 스터디 분리)
+  const userStudies = (user.study_group || '').split(',').map(s => s.trim()).filter(Boolean);
+  const userProject = (user.project_group || '').trim();
+  const userLegacyGroup = (user.group || '').trim();
 
-  if (targets.includes('전체')) return true;
+  // 1. 스터디 매칭 확인 (사용자가 참여한 스터디 중 하나라도 타깃에 포함되어 있는지)
+  const isStudyMatched = userStudies.some(s => targetList.includes(s));
+  if (isStudyMatched) return true;
 
-  const hasDirectMatch = userGroups.some(g => targets.includes(g));
-  if (hasDirectMatch) return true;
-
-  const isProjMember = userGroups.some(g => ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(g));
-  if (targets.includes('프로젝트 전체') && isProjMember) return true;
+  // 2. 프로젝트 조 매칭
+  if (targetList.includes(userProject) || targetList.includes(userLegacyGroup)) return true;
+  if (targetList.includes('프로젝트 전체') && ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(userProject)) {
+    return true;
+  }
 
   return false;
 };
@@ -2472,6 +2498,38 @@ window.filterM = function(key, val) {
   renderMembers();
 };
 
+window.renderStudyCheckboxes = function(currentStudyStr) {
+  const selectedStudies = (currentStudyStr || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  return `
+    <div class="fg" style="margin-top:0.75rem;">
+      <label class="fl">참여 스터디 (다중 선택 가능)</label>
+      <div id="edit-user-study-chips" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
+        ${(window.STUDY_OPTIONS || []).map(study => {
+          const isChecked = selectedStudies.includes(study);
+          return `
+            <label style="
+              display:inline-flex; align-items:center; gap:6px; padding:6px 12px; 
+              border:1px solid ${isChecked ? 'var(--blue)' : 'var(--gray-300)'}; 
+              background:${isChecked ? 'rgba(26,115,232,0.08)' : '#fff'};
+              border-radius:20px; cursor:pointer; font-size:12px; font-weight:500;
+              color:${isChecked ? 'var(--blue)' : 'var(--gray-700)'};
+              transition:all 0.15s ease;
+            ">
+              <input type="checkbox" name="profile-study-item" value="${study}" ${isChecked ? 'checked' : ''} style="display:none;" onchange="this.parentElement.style.background = this.checked ? 'rgba(26,115,232,0.08)' : '#fff'; this.parentElement.style.borderColor = this.checked ? 'var(--blue)' : 'var(--gray-300)'; this.parentElement.style.color = this.checked ? 'var(--blue)' : 'var(--gray-700)';">
+              <span>${study}</span>
+            </label>
+          `;
+        }).join('')}
+      </div>
+      <small style="color:var(--gray-500); font-size:11px; margin-top:4px; display:block;">클릭하여 참여 중인 스터디를 모두 선택하세요.</small>
+    </div>
+  `;
+};
+
 window.openUserEditModal = function(userId) {
   const targetUser = (DB.users || []).find(u => String(u.id) === String(userId));
   if (!targetUser) return toast('해당 학회원 정보를 찾을 수 없습니다.', 'err');
@@ -2506,10 +2564,7 @@ window.openUserEditModal = function(userId) {
         </select>
       </div>
 
-      <div class="fg">
-        <label class="fl">스터디 그룹</label>
-        <input type="text" id="edit-user-study" class="fc" value="${esc(curStudy === '스터디 없음' ? '' : curStudy)}" placeholder="예: UI/UX 스터디, 모션그래픽 (없으면 빈칸)">
-      </div>
+      ${window.renderStudyCheckboxes(curStudy)}
 
       <div class="fg">
         <label class="fl">활동 상태</label>
@@ -2541,8 +2596,10 @@ window.saveUserEdit = async function(userId) {
   const rank = document.getElementById('edit-user-rank')?.value || targetUser?.rank || '학회원';
   const project_group = document.getElementById('edit-user-project')?.value || '미지정';
   
-  let studyInput = document.getElementById('edit-user-study')?.value.trim();
-  const study_group = studyInput ? studyInput : '스터디 없음';
+  // 다중 선택된 스터디 항목 취합 (name 속성 기반)
+  const checkedStudies = Array.from(document.querySelectorAll('input[name="profile-study-item"]:checked'))
+    .map(el => el.value.trim());
+  const study_group = checkedStudies.length > 0 ? checkedStudies.join(', ') : '스터디 없음';
   const status = document.getElementById('edit-user-status')?.value || '활동중';
 
   try {
@@ -2741,6 +2798,7 @@ window.openEditProfileModal = function() {
     <div class="fg"><label class="fl">학과</label><input type="text" id="ep-dept" class="fc" value="${esc(u.dept||'')}"></div>
     <div class="fg"><label class="fl">아바타 글자</label><input type="text" id="ep-avatar" class="fc" maxlength="2" value="${esc(u.avatar||'')}"></div>
     <div class="fg"><label class="fl">비밀번호</label><input type="password" id="ep-pw" class="fc" placeholder="변경할 비밀번호 입력"></div>
+    ${window.renderStudyCheckboxes(u.study_group)}
     <div class="fr mt1">
       <button class="btn btn-p" onclick="saveProfile()">저장</button>
       <button class="btn btn-o" onclick="closeModal()">취소</button>
@@ -2754,6 +2812,12 @@ window.saveProfile = async function() {
   const dp = document.getElementById('ep-dept')?.value.trim();
   const av = document.getElementById('ep-avatar')?.value.trim();
   const pw = document.getElementById('ep-pw')?.value.trim();
+  
+  // 다중 선택된 스터디 항목 취합 (name 속성 기반)
+  const checkedStudies = Array.from(document.querySelectorAll('input[name="profile-study-item"]:checked'))
+    .map(el => el.value.trim());
+  const study_group = checkedStudies.length > 0 ? checkedStudies.join(', ') : '스터디 없음';
+
   const u = DB.currentUser;
   
   const updates = {};
@@ -2761,6 +2825,9 @@ window.saveProfile = async function() {
   if(dp) updates.dept = dp;
   if(av) updates.avatar = av;
   if(pw) updates.pw = pw;
+  
+  // 스터디는 변경이 없더라도 무조건 취합된 결과를 엎어침 (선택 해제 대응)
+  updates.study_group = study_group;
   
   if(window.API && Object.keys(updates).length > 0) {
     try { await window.API.updateUser(u.id, updates); } catch(e) { return toast('프로필 수정 오류', 'err'); }
