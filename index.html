@@ -2254,22 +2254,77 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
   openModal(modalContent);
 };
 
-window.updateMemberAttStatus = async function(sessionId, uid, newStatus) {
-  const a = (DB.attendance || []).find(x => String(x.id) === String(sessionId));
-  if (!a) return;
-
-  let records = Array.isArray(a.records) ? [...a.records] : [];
-  const rec = records.find(r => String(r.uid) === String(uid));
-  if (rec) rec.status = newStatus;
-
+window.updateMemberAttStatus = async function(sessionId, userIdOrSid, newStatus) {
   try {
-    const { error } = await window.supabaseClient.from('attendance').update({ records }).eq('id', sessionId);
+    const session = (DB.attendance || []).find(a => String(a.id) === String(sessionId));
+    if (!session) return;
+
+    let records = [];
+    try {
+      records = Array.isArray(session.records) 
+        ? session.records 
+        : (typeof session.records === 'string' ? JSON.parse(session.records) : []);
+    } catch (e) {
+      records = [];
+    }
+
+    const targetUser = (DB.users || []).find(u => String(u.id) === String(userIdOrSid) || String(u.sid) === String(userIdOrSid));
+    if (!targetUser) return;
+
+    // 기존 기록 탐색
+    const existingIdx = records.findIndex(r => window.isSameUserRecord ? window.isSameUserRecord(r, targetUser) : String(r.sid || r.uid) === String(userIdOrSid));
+    
+    const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+    if (newStatus === '결석') {
+      // 결석 선택 시 기록 목록에서 제거하거나 status를 '결석'으로 갱신
+      if (existingIdx !== -1) {
+        records.splice(existingIdx, 1);
+      }
+    } else {
+      const newRec = {
+        uid: targetUser.id,
+        sid: targetUser.sid,
+        name: targetUser.name,
+        status: newStatus,
+        time: nowTime
+      };
+      if (existingIdx !== -1) {
+        records[existingIdx] = { ...records[existingIdx], status: newStatus, time: nowTime };
+      } else {
+        records.push(newRec);
+      }
+    }
+
+    // 로컬 메모리 즉시 동기화
+    session.records = records;
+
+    // Supabase DB 저장
+    const { error } = await window.supabaseClient
+      .from('attendance')
+      .update({ records: records })
+      .eq('id', sessionId);
+
     if (error) throw error;
-    toast(`상태가 '${newStatus}'(으)로 변경되었습니다.`, 'ok');
-    if (window.API) await window.API.fetchInitialData();
-    renderAttendance();
+
+    if (typeof toast === 'function') {
+      toast(`${targetUser.name} 학회원의 상태가 [${newStatus}]으로 변경되었습니다.`, 'ok');
+    }
+
+    // 모달 테이블 및 카운트 즉시 다시 렌더링
+    if (typeof window.openAttDetailModal === 'function') {
+      window.openAttDetailModal(sessionId);
+    }
+
+    // 메인 화면 출석 카드 렌더링 갱신
+    if (typeof renderAttendance === 'function') {
+      renderAttendance();
+    }
+
   } catch (err) {
-    toast('상태 변경 실패: ' + err.message, 'err');
+    console.error('출석 상태 변경 오류:', err);
+    if (typeof toast === 'function') toast('출석 상태 변경 중 오류가 발생했습니다: ' + err.message, 'err');
+    else alert('출석 상태 변경 저장 중 오류가 발생했습니다: ' + err.message);
   }
 };
 
