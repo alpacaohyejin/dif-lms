@@ -2172,7 +2172,9 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
   }
 
   // 각 유저별 출석 상태 매핑
-  const trs = targetUsers.map(u => {
+  const trsHtml = targetUsers.length === 0 
+    ? `<tr><td colspan="6" style="text-align:center; padding:24px; color:#888;">해당 스터디/조에 배정된 학회원이 없습니다.</td></tr>`
+    : targetUsers.map(u => {
     // 보강된 헬퍼 함수로 기록 검색
     const userRecord = records.find(r => window.isSameUserRecord(r, u));
     
@@ -2220,11 +2222,11 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
         <div class="c-title">[${esc(a.title)}] 실시간 출석 현황</div>
         <div class="tm" style="font-size:12px;">${fmt(a.date)} · ${esc(a.target_group || '전체')} 대상</div>
       </div>
-      <div style="display:flex; gap:8px; margin:1rem 0; flex-wrap:wrap;">
-        <div class="badge b-gr" style="font-size:13px; padding:4px 10px;">출석: ${present}명</div>
-        <div class="badge b-ye" style="font-size:13px; padding:4px 10px;">지각: ${late}명</div>
-        <div class="badge b-bl" style="font-size:13px; padding:4px 10px;">사유: ${excused}명</div>
-        <div class="badge b-re" style="font-size:13px; padding:4px 10px;">결석/미인증: ${absent}명</div>
+      <div style="display:flex; gap:8px; margin: 12px 0 16px 0; flex-wrap:wrap;">
+        <span style="padding:6px 12px; border-radius:20px; background:#e6f4ea; color:#137333; font-weight:600; font-size:12px;">출석: ${present}명</span>
+        <span style="padding:6px 12px; border-radius:20px; background:#fef7e0; color:#b06000; font-weight:600; font-size:12px;">지각: ${late}명</span>
+        <span style="padding:6px 12px; border-radius:20px; background:#e8f0fe; color:#1a73e8; font-weight:600; font-size:12px;">사유: ${excused}명</span>
+        <span style="padding:6px 12px; border-radius:20px; background:#fce8e6; color:#c5221f; font-weight:600; font-size:12px;">결석/미인증: ${absent}명</span>
       </div>
       <div style="max-height:50vh; overflow-y:auto; border:1px solid var(--gray-200); border-radius:8px;">
         <table class="tb" style="margin:0; width:100%;">
@@ -2239,7 +2241,7 @@ window.openAttStatusModal = window.openAttDetailModal = function(sessionId) {
             </tr>
           </thead>
           <tbody id="att-modal-tbody">
-            ${trs}
+            ${trsHtml}
           </tbody>
         </table>
       </div>
@@ -2324,21 +2326,27 @@ window.isUserInAttTarget = function(user, targetGroup) {
   if (!targetGroup || targetGroup === '전체') return true;
   if (!user) return false;
 
-  // 세션의 대상 목록 (예: "포토샵 기초반, 블렌더 스터디" -> ["포토샵 기초반", "블렌더 스터디"])
-  const targets = targetGroup.split(',').map(s => s.trim()).filter(Boolean);
+  // 세션의 대상 목록 (예: "포토샵 기초반, 블렌더 스터디" -> ["포토샵기초", "블렌더스터디"])
+  const targets = targetGroup.split(',').map(s => s.trim().replace(/\s+/g, '')).filter(Boolean);
   if (targets.includes('전체')) return true;
 
   // 유저의 소속 정보 파싱
-  const userStudies = (user.study_group || '').split(',').map(s => s.trim()).filter(Boolean);
-  const userProj = (user.project_group || user.group || '').trim();
+  const userStudies = (user.study_group || '').split(',').map(s => s.trim().replace(/\s+/g, '')).filter(Boolean);
+  const userProj = (user.project_group || user.group || '').trim().replace(/\s+/g, '');
 
   // 1. 스터디 매칭 (유저의 참여 스터디 중 하나라도 출석 대상에 포함되어 있는가)
-  const hasMatchingStudy = userStudies.some(study => targets.includes(study));
+  const hasMatchingStudy = userStudies.some(study => {
+    const cleanStudy = study.replace(/반$/, '');
+    return targets.some(t => {
+      const cleanT = t.replace(/반$/, '');
+      return cleanStudy.includes(cleanT) || cleanT.includes(cleanStudy);
+    });
+  });
   if (hasMatchingStudy) return true;
 
   // 2. 프로젝트 조 매칭
-  if (targets.includes(userProj)) return true;
-  if (targets.includes('프로젝트 전체') && ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(userProj)) {
+  if (targets.some(t => userProj.includes(t) || t.includes(userProj))) return true;
+  if (targets.includes('프로젝트전체') && ['프로젝트1조', '프로젝트2조', '프로젝트3조', '1조', '2조', '3조'].includes(userProj)) {
     return true;
   }
 
