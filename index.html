@@ -1602,8 +1602,10 @@ window.doSubmitAsg = async function(asgId) {
 window.viewAsgSubmissions = function(id) {
   const a = (DB?.assignments||[]).find(x => String(x.id) === String(id));
   if(!a) return;
-  let targetUsers = (DB.users||[]).filter(u => u.status === 'active');
-  if(a.group !== '전체') targetUsers = targetUsers.filter(u => u.group === a.group);
+  let targetUsers = DB.users || [];
+  if (a.group && a.group !== '전체') {
+    targetUsers = targetUsers.filter(u => window.isUserInAssignmentTarget(u, a.group));
+  }
   
   let h = `<div class="modal fc" style="max-width:700px;" onclick="event.stopPropagation()">
     <h3>[${esc(a.title)}] 제출 현황</h3>
@@ -1629,31 +1631,20 @@ window.viewAsgSubmissions = function(id) {
 };
 
 window.isUserInAssignmentTarget = function(user, targetGroupStr) {
-  if (!targetGroupStr || targetGroupStr === '전체') return true;
-  if (!user) return false;
-
-  const userGroup = (user.group || '').trim();
-  const targetList = targetGroupStr.split(',').map(s => s.trim());
-
-  // 1. 과제 대상에 '전체'가 포함된 경우
-  if (targetList.includes('전체')) return true;
-
-  // 2. 본인의 소속 조가 직접 명시된 경우 (예: '프로젝트 1조')
-  if (targetList.includes(userGroup)) return true;
-
-  // 3. 대상에 '프로젝트 전체'가 있고 본인이 1조, 2조, 3조 중 하나인 경우
-  const isProjectMember = ['프로젝트 1조', '프로젝트 2조', '프로젝트 3조', '1조', '2조', '3조'].includes(userGroup);
-  if (targetList.includes('프로젝트 전체') && isProjectMember) {
-    return true;
-  }
-
-  return false;
+  return window.isUserInAttTarget ? window.isUserInAttTarget(user, targetGroupStr) : true;
 };
 
-window.renderTargetGroupChips = function(selectedGroups = []) {
-  // 기본 추천 그룹 목록 (전체 제외)
-  const allAvailableGroups = window.DIF_GROUPS.filter(g => g !== '전체');
+window.COMMON_TARGET_GROUPS = [
+  '프로젝트 전체',
+  '프로젝트 1조',
+  '프로젝트 2조',
+  '프로젝트 3조',
+  '포토샵 기초반',
+  '포토샵 심화반',
+  '블렌더 스터디'
+];
 
+window.renderTargetGroupChips = function(selectedGroups = []) {
   const isAll = selectedGroups.includes('전체') || selectedGroups.length === 0;
 
   let html = `
@@ -1664,7 +1655,7 @@ window.renderTargetGroupChips = function(selectedGroups = []) {
       </label>
   `;
 
-  allAvailableGroups.forEach(grp => {
+  window.COMMON_TARGET_GROUPS.forEach(grp => {
     const checked = !isAll && selectedGroups.includes(grp);
     html += `
       <label class="chip-label" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:4px 10px; border-radius:16px; border:1px solid var(--gray-300); background:${checked ? 'var(--blue-light, #e8f0fe)' : '#fff'}; color:${checked ? 'var(--blue, #1a73e8)' : 'inherit'}; font-weight:600;">
