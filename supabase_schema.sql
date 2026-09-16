@@ -132,3 +132,50 @@ BEGIN
     UPDATE public.users SET is_active = true;
   END IF;
 END $$;
+
+-- 10. users 테이블에 프로젝트 조와 스터디 컬럼 추가 및 기존 데이터 마이그레이션
+ALTER TABLE public.users 
+ADD COLUMN IF NOT EXISTS project_group TEXT DEFAULT '미지정';
+
+ALTER TABLE public.users 
+ADD COLUMN IF NOT EXISTS study_group TEXT DEFAULT '스터디 없음';
+
+-- 기존 group 컬럼에 저장된 값이 있다면 적절히 복사
+UPDATE public.users 
+SET project_group = "group" 
+WHERE ("group" LIKE '%프로젝트%' OR "group" LIKE '%조%') AND (project_group IS NULL OR project_group = '미지정');
+
+UPDATE public.users 
+SET study_group = "group" 
+WHERE "group" LIKE '%스터디%' AND (study_group IS NULL OR study_group = '스터디 없음');
+
+-- PostgREST 캐시 갱신
+-- PostgREST 캐시 갱신
+NOTIFY pgrst, 'reload schema';
+
+-- 11. users 테이블의 sid 및 password에 섞인 앞뒤 공백과 개행문자 일괄 제거 (로그인 버그 방지)
+UPDATE public.users 
+SET 
+  sid = TRIM(BOTH FROM sid),
+  password = TRIM(BOTH FROM password)
+WHERE sid IS NOT NULL;
+
+-- 12. 특정 계정(gaintmt02) 복구 쿼리
+-- email 컬럼이 없다면 생성
+ALTER TABLE public.users 
+ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
+
+-- 해당 계정의 공백 및 비밀번호를 안전한 문자열 '000000'으로 확정 업데이트
+UPDATE public.users 
+SET 
+  password = '000000',
+  status = '활동중'
+WHERE 
+  sid ILIKE '%gaintmt02%' 
+  OR email ILIKE '%gaintmt02%' 
+  OR name ILIKE '%gaintmt02%';
+
+-- 현재 DB에 어떻게 저장되어 있는지 결과 확인
+SELECT id, name, sid, email, password, status 
+FROM public.users 
+WHERE sid ILIKE '%gaintmt02%' OR email ILIKE '%gaintmt02%';
